@@ -87,7 +87,13 @@ export function AppShell({
           New Ship
         </Button>
 
-        <div className="mt-auto flex items-center gap-2 rounded-md border border-border/70 p-2">
+        <Link
+          to="/connect"
+          className="mt-auto mb-2 rounded-md px-3 py-2 text-xs text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
+        >
+          Connect to ChatGPT / Claude →
+        </Link>
+        <div className="flex items-center gap-2 rounded-md border border-border/70 p-2">
           <UserAvatar url={me?.avatar_url} name={me?.display_name} size={32} />
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-medium">{me?.display_name ?? "You"}</p>
