@@ -9,6 +9,16 @@ import { getFeed, getMyProfile } from "@/lib/api.functions";
 
 export const Route = createFileRoute("/_authenticated/explore")({
   component: ExplorePage,
+  head: () => ({
+    meta: [
+      { title: "Explore ships — ShippedIn" },
+      { name: "description", content: "Discover the latest ships from builders across ShippedIn, tagged by the AI tool they used." },
+      { property: "og:title", content: "Explore ships — ShippedIn" },
+      { property: "og:description", content: "The latest ships from every builder on ShippedIn." },
+      { property: "og:url", content: "https://shippedin.dev/explore" },
+    ],
+    links: [{ rel: "canonical", href: "https://shippedin.dev/explore" }],
+  }),
 });
 
 function ExplorePage() {

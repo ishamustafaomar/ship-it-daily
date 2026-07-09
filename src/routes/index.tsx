@@ -3,6 +3,16 @@ import { Flame, Rocket, Users } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   component: Landing,
+  head: () => ({
+    meta: [
+      { title: "ShippedIn — build in public with AI" },
+      { name: "description", content: "A daily feed for builders shipping apps with Lovable, Cursor, Bolt, Replit, and v0. Post what you shipped, keep your streak, follow other builders." },
+      { property: "og:title", content: "ShippedIn — build in public with AI" },
+      { property: "og:description", content: "Post what you shipped today, tag the tool, keep your streak alive with other AI builders." },
+      { property: "og:url", content: "https://shippedin.dev/" },
+    ],
+    links: [{ rel: "canonical", href: "https://shippedin.dev/" }],
+  }),
 });
 
 function Landing() {
@@ -52,6 +62,7 @@ function Landing() {
           </Link>
         </div>
 
+        <h2 className="sr-only">Why ShippedIn</h2>
         <div className="mt-20 grid gap-6 md:grid-cols-3">
           {[
             { icon: Rocket, title: "Ship daily", body: "Post short updates on what you built or learned today." },

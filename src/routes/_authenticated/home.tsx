@@ -11,6 +11,17 @@ import { getFeed, getMyProfile } from "@/lib/api.functions";
 
 export const Route = createFileRoute("/_authenticated/home")({
   component: HomePage,
+  head: () => ({
+    meta: [
+      { title: "Home feed — ShippedIn" },
+      { name: "description", content: "Your daily ShippedIn feed. See what builders you follow shipped today and post your own update." },
+      { property: "og:title", content: "Home feed — ShippedIn" },
+      { property: "og:description", content: "Your following and For You feed of daily builder ships." },
+      { property: "og:url", content: "https://shippedin.dev/home" },
+      { name: "robots", content: "noindex" },
+    ],
+    links: [{ rel: "canonical", href: "https://shippedin.dev/home" }],
+  }),
 });
 
 function HomePage() {

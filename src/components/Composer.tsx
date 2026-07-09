@@ -169,6 +169,8 @@ export function Composer({
                 setImagePreview(null);
               }}
               className="absolute right-2 top-2 rounded-full bg-background/80 p-1 text-foreground hover:bg-background"
+              type="button"
+              aria-label="Remove image"
             >
               <X className="h-4 w-4" />
             </button>

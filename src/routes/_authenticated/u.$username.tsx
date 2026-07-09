@@ -11,6 +11,17 @@ import { getProfileByUsername, toggleFollow } from "@/lib/api.functions";
 
 export const Route = createFileRoute("/_authenticated/u/$username")({
   component: ProfilePage,
+  head: ({ params }) => ({
+    meta: [
+      { title: `@${params.username} — ShippedIn` },
+      { name: "description", content: `Ships, streak, and updates from @${params.username} on ShippedIn — a daily feed for builders shipping with AI tools.` },
+      { property: "og:title", content: `@${params.username} on ShippedIn` },
+      { property: "og:description", content: `Follow @${params.username}'s daily ships and streak on ShippedIn.` },
+      { property: "og:type", content: "profile" },
+      { property: "og:url", content: `https://shippedin.dev/u/${params.username}` },
+    ],
+    links: [{ rel: "canonical", href: `https://shippedin.dev/u/${params.username}` }],
+  }),
 });
 
 function ProfilePage() {
