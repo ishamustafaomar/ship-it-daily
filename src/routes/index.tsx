@@ -62,8 +62,8 @@ function Landing() {
           </Link>
         </div>
 
+        <h2 className="sr-only">Why ShippedIn</h2>
         <div className="mt-20 grid gap-6 md:grid-cols-3">
-          <h2 className="sr-only">Why ShippedIn</h2>
           {[
             { icon: Rocket, title: "Ship daily", body: "Post short updates on what you built or learned today." },
             { icon: Flame, title: "Keep a streak", body: "One ship per day keeps the flame alive." },
