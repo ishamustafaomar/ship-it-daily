@@ -80,11 +80,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "ShippedIn — build in public with AI" },
-      { name: "description", content: "A daily feed for builders shipping apps with AI tools. Post what you shipped, keep your streak, follow other builders." },
+      { name: "description", content: "A daily feed for builders shipping apps with Lovable, Cursor, Bolt, Replit, and v0. Post what you shipped, keep your streak, follow other builders." },
       { property: "og:title", content: "ShippedIn — build in public with AI" },
-      { property: "og:description", content: "A daily feed for builders shipping with Lovable, Cursor, Bolt, Replit, and v0." },
+      { property: "og:description", content: "A daily feed for builders shipping apps with Lovable, Cursor, Bolt, Replit, and v0. Post what you shipped, keep your streak, follow other builders." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "ShippedIn — build in public with AI" },
+      { name: "twitter:description", content: "A daily feed for builders shipping apps with Lovable, Cursor, Bolt, Replit, and v0. Post what you shipped, keep your streak, follow other builders." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/RdNgtxijVcNUKO5Vkn5mYqidYrG2/social-images/social-1783633002129-82a17b54-cca9-48de-9d77-a26cebaf4cc3.webp" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/RdNgtxijVcNUKO5Vkn5mYqidYrG2/social-images/social-1783633002129-82a17b54-cca9-48de-9d77-a26cebaf4cc3.webp" },
     ],
     links: [
       {

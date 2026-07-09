@@ -8,7 +8,7 @@ export const Route = createFileRoute("/")({
       { title: "ShippedIn — build in public with AI" },
       { name: "description", content: "A daily feed for builders shipping apps with Lovable, Cursor, Bolt, Replit, and v0. Post what you shipped, keep your streak, follow other builders." },
       { property: "og:title", content: "ShippedIn — build in public with AI" },
-      { property: "og:description", content: "Post what you shipped today, tag the tool, keep your streak alive with other AI builders." },
+      { property: "og:description", content: "A daily feed for builders shipping apps with Lovable, Cursor, Bolt, Replit, and v0. Post what you shipped, keep your streak, follow other builders." },
       { property: "og:url", content: "https://shippedin.dev/" },
     ],
     links: [{ rel: "canonical", href: "https://shippedin.dev/" }],
