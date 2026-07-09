@@ -255,7 +255,7 @@ export const createShip = createServerFn({ method: "POST" })
       .object({
         body: z.string().min(1).max(560),
         tool_tag: z.string().max(24).nullable().optional(),
-        link_url: z.string().url().nullable().optional(),
+        link_url: httpUrl.nullable().optional(),
         image_url: z.string().nullable().optional(),
         parent_ship_id: z.string().uuid().nullable().optional(),
         post_type: z.enum(["ship", "ask", "feedback", "discussion"]).optional(),
