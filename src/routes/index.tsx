@@ -77,6 +77,19 @@ function Landing() {
           ))}
         </div>
       </main>
+      <footer className="mx-auto max-w-6xl border-t border-border/70 px-6 py-6 text-sm text-muted-foreground">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <span className="font-mono text-xs">© ShippedIn</span>
+          <div className="flex flex-wrap gap-4">
+            <Link to="/blog/building-in-public-with-ai" className="hover:text-foreground">
+              Guide
+            </Link>
+            <Link to="/connect" className="hover:text-foreground">
+              Connect to ChatGPT / Claude
+            </Link>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
