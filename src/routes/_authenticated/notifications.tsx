@@ -11,6 +11,14 @@ import { timeAgo } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/notifications")({
   component: NotifPage,
+  head: () => ({
+    meta: [
+      { title: "Notifications — ShippedIn" },
+      { name: "description", content: "Likes, reships, replies, and new followers on your ShippedIn activity." },
+      { name: "robots", content: "noindex" },
+    ],
+    links: [{ rel: "canonical", href: "https://shippedin.dev/notifications" }],
+  }),
 });
 
 const ICONS = { like: Heart, reship: Repeat2, reply: MessageCircle, follow: UserPlus } as const;
