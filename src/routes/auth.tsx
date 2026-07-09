@@ -11,8 +11,8 @@ import { Label } from "@/components/ui/label";
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Sign in — Shipped" },
-      { name: "description", content: "Sign in or create an account on Shipped to start posting daily builds." },
+      { title: "Sign in — ShippedIn" },
+      { name: "description", content: "Sign in or create an account on ShippedIn to start posting daily builds." },
     ],
   }),
   component: AuthPage,
@@ -75,7 +75,7 @@ function AuthPage() {
       <div className="w-full max-w-sm">
         <Link to="/" className="mb-8 flex items-center justify-center gap-2">
           <span className="inline-block h-2.5 w-2.5 rounded-full bg-primary" />
-          <span className="font-mono text-xl font-semibold tracking-tight">shipped</span>
+          <span className="font-mono text-xl font-semibold tracking-tight">ShippedIn</span>
         </Link>
 
         <div className="rounded-xl border border-border bg-card p-6">

@@ -11,7 +11,7 @@ function Landing() {
       <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
         <div className="flex items-center gap-2">
           <span className="inline-block h-2.5 w-2.5 rounded-full bg-primary" />
-          <span className="font-mono text-lg font-semibold tracking-tight">shipped</span>
+          <span className="font-mono text-lg font-semibold tracking-tight">ShippedIn</span>
         </div>
         <div className="flex items-center gap-3">
           <Link
