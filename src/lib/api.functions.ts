@@ -2,6 +2,19 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
+// Only allow http(s) links — blocks javascript:, data:, vbscript:, etc.
+const httpUrl = z
+  .string()
+  .url()
+  .refine((v) => {
+    try {
+      const p = new URL(v).protocol;
+      return p === "http:" || p === "https:";
+    } catch {
+      return false;
+    }
+  }, { message: "Only http(s) URLs are allowed" });
+
 // ============= Shape for feed items =============
 export type FeedShip = {
   id: string;
@@ -242,7 +255,7 @@ export const createShip = createServerFn({ method: "POST" })
       .object({
         body: z.string().min(1).max(560),
         tool_tag: z.string().max(24).nullable().optional(),
-        link_url: z.string().url().nullable().optional(),
+        link_url: httpUrl.nullable().optional(),
         image_url: z.string().nullable().optional(),
         parent_ship_id: z.string().uuid().nullable().optional(),
         post_type: z.enum(["ship", "ask", "feedback", "discussion"]).optional(),

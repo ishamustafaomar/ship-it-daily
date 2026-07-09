@@ -142,7 +142,7 @@
                   "type": "null"
                 }
               ],
-              "description": "Optional URL to link to."
+              "description": "Optional http(s) URL to link to."
             }
           },
           "required": [
