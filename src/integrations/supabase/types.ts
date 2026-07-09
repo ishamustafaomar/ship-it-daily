@@ -14,7 +14,253 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      follows: {
+        Row: {
+          created_at: string
+          follower_id: string
+          following_id: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          follower_id: string
+          following_id: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          follower_id?: string
+          following_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "follows_follower_id_fkey"
+            columns: ["follower_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "follows_following_id_fkey"
+            columns: ["following_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      likes: {
+        Row: {
+          created_at: string
+          id: string
+          ship_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          ship_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ship_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "likes_ship_id_fkey"
+            columns: ["ship_id"]
+            isOneToOne: false
+            referencedRelation: "ships"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "likes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          actor_id: string
+          created_at: string
+          id: string
+          read: boolean
+          recipient_id: string
+          ship_id: string | null
+          type: string
+        }
+        Insert: {
+          actor_id: string
+          created_at?: string
+          id?: string
+          read?: boolean
+          recipient_id: string
+          ship_id?: string | null
+          type: string
+        }
+        Update: {
+          actor_id?: string
+          created_at?: string
+          id?: string
+          read?: boolean
+          recipient_id?: string
+          ship_id?: string | null
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_ship_id_fkey"
+            columns: ["ship_id"]
+            isOneToOne: false
+            referencedRelation: "ships"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          building_now: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          last_ship_date: string | null
+          longest_streak: number
+          streak_count: number
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          building_now?: string | null
+          created_at?: string
+          display_name?: string | null
+          id: string
+          last_ship_date?: string | null
+          longest_streak?: number
+          streak_count?: number
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          building_now?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          last_ship_date?: string | null
+          longest_streak?: number
+          streak_count?: number
+          username?: string | null
+        }
+        Relationships: []
+      }
+      reships: {
+        Row: {
+          created_at: string
+          id: string
+          ship_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          ship_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ship_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reships_ship_id_fkey"
+            columns: ["ship_id"]
+            isOneToOne: false
+            referencedRelation: "ships"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reships_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ships: {
+        Row: {
+          author_id: string
+          body: string
+          created_at: string
+          id: string
+          image_url: string | null
+          link_url: string | null
+          parent_ship_id: string | null
+          tool_tag: string | null
+        }
+        Insert: {
+          author_id: string
+          body: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          link_url?: string | null
+          parent_ship_id?: string | null
+          tool_tag?: string | null
+        }
+        Update: {
+          author_id?: string
+          body?: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          link_url?: string | null
+          parent_ship_id?: string | null
+          tool_tag?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ships_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ships_parent_ship_id_fkey"
+            columns: ["parent_ship_id"]
+            isOneToOne: false
+            referencedRelation: "ships"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
