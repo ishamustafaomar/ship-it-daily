@@ -10,6 +10,17 @@ import { getMyProfile, getShipDetail } from "@/lib/api.functions";
 
 export const Route = createFileRoute("/_authenticated/s/$shipId")({
   component: ShipDetail,
+  head: ({ params }) => ({
+    meta: [
+      { title: `Ship ${params.shipId.slice(0, 8)} — ShippedIn` },
+      { name: "description", content: "A ship on ShippedIn — see the update, tool used, and replies from other builders." },
+      { property: "og:title", content: "A ship on ShippedIn" },
+      { property: "og:description", content: "See the update, tool used, and replies from other builders on ShippedIn." },
+      { property: "og:type", content: "article" },
+      { property: "og:url", content: `https://shippedin.dev/s/${params.shipId}` },
+    ],
+    links: [{ rel: "canonical", href: `https://shippedin.dev/s/${params.shipId}` }],
+  }),
 });
 
 function ShipDetail() {
