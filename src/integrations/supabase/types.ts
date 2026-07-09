@@ -222,6 +222,7 @@ export type Database = {
           image_url: string | null
           link_url: string | null
           parent_ship_id: string | null
+          post_type: string
           tool_tag: string | null
         }
         Insert: {
@@ -232,6 +233,7 @@ export type Database = {
           image_url?: string | null
           link_url?: string | null
           parent_ship_id?: string | null
+          post_type?: string
           tool_tag?: string | null
         }
         Update: {
@@ -242,6 +244,7 @@ export type Database = {
           image_url?: string | null
           link_url?: string | null
           parent_ship_id?: string | null
+          post_type?: string
           tool_tag?: string | null
         }
         Relationships: [

@@ -1,0 +1,1 @@
+ALTER TABLE public.ships ADD COLUMN IF NOT EXISTS post_type TEXT NOT NULL DEFAULT 'ship' CHECK (post_type IN ('ship','ask','feedback','discussion'));
