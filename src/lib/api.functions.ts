@@ -119,7 +119,7 @@ export const updateMyProfile = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ context, data }) => {
-    const payload: Record<string, any> = { ...data };
+    const payload = { ...data } as typeof data;
     if (payload.username) payload.username = payload.username.toLowerCase();
     const { data: row, error } = await context.supabase
       .from("profiles")
