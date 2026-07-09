@@ -126,6 +126,11 @@ export function ShipCard({
             <span className="font-mono text-xs text-muted-foreground shrink-0">
               {timeAgo(ship.created_at)}
             </span>
+            {ship.post_type && ship.post_type !== "ship" ? (
+              <span className="ml-1 rounded-full bg-primary/15 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wide text-primary">
+                {ship.post_type}
+              </span>
+            ) : null}
             {ship.tool_tag ? (
               <span className="ml-1">
                 <ToolTag tag={ship.tool_tag} />

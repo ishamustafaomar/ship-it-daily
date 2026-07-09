@@ -20,11 +20,24 @@ import { UserAvatar } from "./UserAvatar";
 
 const NONE = "__none__";
 
+type PostType = "ship" | "ask" | "feedback" | "discussion";
+const POST_TYPES: {
+  value: PostType;
+  label: string;
+  placeholder: string;
+  cta: string;
+}[] = [
+  { value: "ship", label: "Shipped", placeholder: "What did you ship today?", cta: "Ship" },
+  { value: "ask", label: "Ask", placeholder: "Stuck on something? Ask the community...", cta: "Ask" },
+  { value: "feedback", label: "Feedback", placeholder: "Share what you built and ask for feedback...", cta: "Post" },
+  { value: "discussion", label: "Discussion", placeholder: "Start a discussion...", cta: "Post" },
+];
+
 export function Composer({
   myUserId,
   avatarUrl,
   parentShipId = null,
-  placeholder = "What did you ship today?",
+  placeholder,
   onDone,
   autoFocus,
 }: {
@@ -41,10 +54,10 @@ export function Composer({
   const [body, setBody] = useState("");
   const [tool, setTool] = useState<string>(NONE);
   const [link, setLink] = useState("");
-  const [showLink, setShowLink] = useState(false);
   const [imagePath, setImagePath] = useState<string | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [postType, setPostType] = useState<PostType>("ship");
 
   const m = useMutation({
     mutationFn: async () =>
@@ -55,17 +68,18 @@ export function Composer({
           link_url: link.trim() || null,
           image_url: imagePath,
           parent_ship_id: parentShipId,
+          post_type: parentShipId ? undefined : postType,
         },
       }),
     onSuccess: () => {
       setBody("");
       setTool(NONE);
       setLink("");
-      setShowLink(false);
       setImagePath(null);
       setImagePreview(null);
+      setPostType("ship");
       qc.invalidateQueries();
-      toast.success(parentShipId ? "Reply posted" : "Shipped!");
+      toast.success(parentShipId ? "Reply posted" : "Posted!");
       onDone?.();
     },
     onError: (e: any) => toast.error(e?.message ?? "Failed to post"),
@@ -99,32 +113,52 @@ export function Composer({
 
   const len = body.length;
   const canPost = body.trim().length > 0 && !m.isPending && !uploading;
+  const active = POST_TYPES.find((p) => p.value === postType)!;
+  const effectivePlaceholder =
+    placeholder ?? (parentShipId ? "Write a reply..." : active.placeholder);
 
   return (
     <div className="flex gap-3 p-4">
       <UserAvatar url={avatarUrl} size={40} />
       <div className="min-w-0 flex-1">
+        {!parentShipId ? (
+          <div className="mb-3 flex flex-wrap gap-1.5">
+            {POST_TYPES.map((t) => (
+              <button
+                key={t.value}
+                type="button"
+                onClick={() => setPostType(t.value)}
+                className={`rounded-full px-3 py-1 font-mono text-xs transition-colors ${
+                  postType === t.value
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-secondary text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+        ) : null}
+
         <Textarea
           autoFocus={autoFocus}
           value={body}
           onChange={(e) => setBody(e.target.value)}
-          placeholder={placeholder}
+          placeholder={effectivePlaceholder}
           rows={parentShipId ? 2 : 3}
           className="resize-none border-0 bg-transparent text-base focus-visible:ring-0 focus-visible:ring-offset-0 p-0 shadow-none"
           maxLength={560}
         />
 
-        {showLink ? (
-          <div className="mt-2 flex items-center gap-2">
-            <LinkIcon className="h-3.5 w-3.5 text-muted-foreground" />
-            <Input
-              value={link}
-              onChange={(e) => setLink(e.target.value)}
-              placeholder="https://your-link.com"
-              className="h-8 font-mono text-xs"
-            />
-          </div>
-        ) : null}
+        <div className="mt-2 flex items-center gap-2">
+          <LinkIcon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+          <Input
+            value={link}
+            onChange={(e) => setLink(e.target.value)}
+            placeholder="https://your-link.com (optional)"
+            className="h-8 font-mono text-xs"
+          />
+        </div>
 
         {imagePreview ? (
           <div className="relative mt-2 overflow-hidden rounded-lg border border-border">
@@ -157,18 +191,10 @@ export function Composer({
           </Select>
 
           <button
-            onClick={() => setShowLink((s) => !s)}
-            className={`rounded-md p-1.5 hover:bg-secondary ${
-              showLink ? "text-primary" : "text-muted-foreground"
-            }`}
-            aria-label="Toggle link"
-          >
-            <LinkIcon className="h-4 w-4" />
-          </button>
-          <button
             onClick={() => fileInput.current?.click()}
             className="rounded-md p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground"
-            aria-label="Upload image"
+            aria-label="Attach image (optional)"
+            title="Attach image (optional)"
           >
             {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImageIcon className="h-4 w-4" />}
           </button>
@@ -198,7 +224,7 @@ export function Composer({
             className="gap-1.5"
           >
             {m.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
-            {parentShipId ? "Reply" : "Ship"}
+            {parentShipId ? "Reply" : active.cta}
           </Button>
         </div>
       </div>
