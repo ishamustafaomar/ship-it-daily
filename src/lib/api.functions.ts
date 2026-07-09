@@ -12,6 +12,7 @@ export type FeedShip = {
   image_url: string | null;
   image_signed_url: string | null;
   parent_ship_id: string | null;
+  post_type: "ship" | "ask" | "feedback" | "discussion";
   created_at: string;
   author: {
     id: string;
@@ -81,6 +82,7 @@ async function decorateShips(
     image_url: r.image_url,
     image_signed_url: r.image_url ? signedMap[r.image_url] ?? null : null,
     parent_ship_id: r.parent_ship_id,
+    post_type: (r.post_type ?? "ship") as FeedShip["post_type"],
     created_at: r.created_at,
     author: authors[r.author_id] ?? { id: r.author_id, username: null, display_name: null, avatar_url: null },
     like_count: likeMap[r.id] ?? 0,
@@ -243,6 +245,7 @@ export const createShip = createServerFn({ method: "POST" })
         link_url: z.string().url().nullable().optional(),
         image_url: z.string().nullable().optional(),
         parent_ship_id: z.string().uuid().nullable().optional(),
+        post_type: z.enum(["ship", "ask", "feedback", "discussion"]).optional(),
       })
       .parse(d),
   )
@@ -256,6 +259,7 @@ export const createShip = createServerFn({ method: "POST" })
         link_url: data.link_url ?? null,
         image_url: data.image_url ?? null,
         parent_ship_id: data.parent_ship_id ?? null,
+        post_type: data.post_type ?? "ship",
       })
       .select()
       .single();
