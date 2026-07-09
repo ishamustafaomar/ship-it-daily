@@ -1,0 +1,191 @@
+{
+  "version": 1,
+  "sdk_version": "0.20.0",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://kjvzqbrpqwcxwlcavyrc.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "shippedin-mcp",
+      "version": "0.1.0",
+      "title": "ShippedIn"
+    },
+    "tools": [
+      {
+        "name": "get_my_profile",
+        "title": "Get my profile",
+        "description": "Return the signed-in user's ShippedIn profile, including current streak, longest streak, and last ship date.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_feed",
+        "title": "List ShippedIn feed",
+        "description": "List the most recent top-level ships from ShippedIn. Use scope 'following' to only include people the signed-in user follows, or 'for_you' for the global recent feed.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "scope": {
+              "type": "string",
+              "enum": [
+                "following",
+                "for_you"
+              ],
+              "default": "for_you",
+              "description": "Which feed to read."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20,
+              "description": "Max number of ships to return."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_ship",
+        "title": "Get a ship with its replies",
+        "description": "Fetch a single ShippedIn ship by ID along with its threaded replies.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "ship_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The ship ID."
+            }
+          },
+          "required": [
+            "ship_id"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "create_ship",
+        "title": "Create a ship",
+        "description": "Post something to ShippedIn as the signed-in user. Use post_type 'ship' for what you shipped today, 'ask' to ask for help, 'feedback' to request feedback, or 'discussion' for general talk. Keeps the daily streak going.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "body": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 560,
+              "description": "The post body (max 560 chars)."
+            },
+            "post_type": {
+              "type": "string",
+              "enum": [
+                "ship",
+                "ask",
+                "feedback",
+                "discussion"
+              ],
+              "default": "ship"
+            },
+            "tool_tag": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 24
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Optional AI tool tag (e.g. 'Lovable', 'Cursor')."
+            },
+            "link_url": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uri"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Optional URL to link to."
+            }
+          },
+          "required": [
+            "body"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "reply_to_ship",
+        "title": "Reply to a ship",
+        "description": "Post a threaded reply to an existing ShippedIn ship as the signed-in user.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "parent_ship_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The ID of the ship to reply to."
+            },
+            "body": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 560,
+              "description": "Reply body (max 560 chars)."
+            }
+          },
+          "required": [
+            "parent_ship_id",
+            "body"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
