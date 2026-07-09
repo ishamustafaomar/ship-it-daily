@@ -1,0 +1,12 @@
+# ShippedIn
+
+> A daily build-in-public feed for people shipping apps and websites with AI tools like Lovable, Cursor, Bolt, Replit, and v0. Builders post what they shipped or learned today, tag the tool they used, and keep a daily streak going.
+
+## Pages
+
+- [Home](/): What ShippedIn is and how to join.
+- [Sign in](/auth): Create an account or sign in.
+
+## Optional
+
+- [Explore](/explore): The latest ships from every builder (requires sign-in).
