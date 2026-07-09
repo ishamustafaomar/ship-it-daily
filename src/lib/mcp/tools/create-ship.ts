@@ -2,6 +2,18 @@ import { defineTool } from "@lovable.dev/mcp-js";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 
+const httpUrl = z
+  .string()
+  .url()
+  .refine((v) => {
+    try {
+      const p = new URL(v).protocol;
+      return p === "http:" || p === "https:";
+    } catch {
+      return false;
+    }
+  }, { message: "Only http(s) URLs are allowed" });
+
 export default defineTool({
   name: "create_ship",
   title: "Create a ship",
@@ -10,7 +22,7 @@ export default defineTool({
     body: z.string().min(1).max(560).describe("The post body (max 560 chars)."),
     post_type: z.enum(["ship", "ask", "feedback", "discussion"]).default("ship"),
     tool_tag: z.string().max(24).nullish().describe("Optional AI tool tag (e.g. 'Lovable', 'Cursor')."),
-    link_url: z.string().url().nullish().describe("Optional URL to link to."),
+    link_url: httpUrl.nullish().describe("Optional http(s) URL to link to."),
   },
   annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: false },
   handler: async ({ body, post_type, tool_tag, link_url }, ctx) => {
