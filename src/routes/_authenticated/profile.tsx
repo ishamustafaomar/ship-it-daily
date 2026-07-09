@@ -7,6 +7,13 @@ import { getMyProfile } from "@/lib/api.functions";
 
 export const Route = createFileRoute("/_authenticated/profile")({
   component: ProfileRedirect,
+  head: () => ({
+    meta: [
+      { title: "Your profile — ShippedIn" },
+      { name: "description", content: "Your ShippedIn profile, streak, and ships." },
+      { name: "robots", content: "noindex" },
+    ],
+  }),
 });
 
 function ProfileRedirect() {
