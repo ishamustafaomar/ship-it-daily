@@ -51,7 +51,7 @@ export function AppShell({
       <aside className="sticky top-0 hidden h-screen w-[240px] shrink-0 flex-col border-r border-border/70 px-3 py-4 md:flex">
         <Link to="/home" className="mb-6 flex items-center gap-2 px-2">
           <span className="inline-block h-2 w-2 rounded-full bg-primary" />
-          <span className="font-mono text-lg font-semibold tracking-tight">shipped</span>
+          <span className="font-mono text-lg font-semibold tracking-tight">ShippedIn</span>
         </Link>
         <nav className="flex flex-col gap-1">
           {NAV.map((item) => {
@@ -111,7 +111,7 @@ export function AppShell({
         <div className="sticky top-0 z-20 flex items-center justify-between border-b border-border/70 bg-background/80 px-4 py-3 backdrop-blur md:hidden">
           <Link to="/home" className="flex items-center gap-2">
             <span className="inline-block h-2 w-2 rounded-full bg-primary" />
-            <span className="font-mono text-base font-semibold">shipped</span>
+            <span className="font-mono text-base font-semibold">ShippedIn</span>
           </Link>
           {me?.streak_count ? (
             <div className="flex items-center gap-1 font-mono text-sm">
