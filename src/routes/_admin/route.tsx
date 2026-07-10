@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet, redirect, Link, useRouterState } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { amIAdmin } from "@/lib/admin.functions";
-import { LayoutDashboard, Users, MessageSquare, Activity, Flag, ArrowLeft } from "lucide-react";
+import { LayoutDashboard, Users, MessageSquare, Activity, Flag, ArrowLeft, Sparkles } from "lucide-react";
 
 export const Route = createFileRoute("/_admin")({
   ssr: false,
@@ -21,6 +21,7 @@ const NAV = [
   { to: "/admin/ships", label: "Ships", icon: MessageSquare, exact: false },
   { to: "/admin/activity", label: "Activity", icon: Activity, exact: false },
   { to: "/admin/reports", label: "Reports", icon: Flag, exact: false },
+  { to: "/admin/autopost", label: "Autopost", icon: Sparkles, exact: false },
 ] as const;
 
 function AdminLayout() {

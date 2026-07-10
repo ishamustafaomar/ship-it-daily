@@ -14,6 +14,101 @@ export type Database = {
   }
   public: {
     Tables: {
+      autopost_history: {
+        Row: {
+          attempts: number
+          category: string
+          created_at: string
+          error: string | null
+          generated_at: string
+          generated_text: string
+          id: string
+          length_band: string | null
+          post_type: string
+          prompt: string
+          published: boolean
+          published_at: string | null
+          scheduled_for: string | null
+          ship_id: string | null
+          tool_tag: string | null
+          topic_tags: string[]
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number
+          category: string
+          created_at?: string
+          error?: string | null
+          generated_at?: string
+          generated_text: string
+          id?: string
+          length_band?: string | null
+          post_type?: string
+          prompt: string
+          published?: boolean
+          published_at?: string | null
+          scheduled_for?: string | null
+          ship_id?: string | null
+          tool_tag?: string | null
+          topic_tags?: string[]
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number
+          category?: string
+          created_at?: string
+          error?: string | null
+          generated_at?: string
+          generated_text?: string
+          id?: string
+          length_band?: string | null
+          post_type?: string
+          prompt?: string
+          published?: boolean
+          published_at?: string | null
+          scheduled_for?: string | null
+          ship_id?: string | null
+          tool_tag?: string | null
+          topic_tags?: string[]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "autopost_history_ship_id_fkey"
+            columns: ["ship_id"]
+            isOneToOne: false
+            referencedRelation: "ships"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      autopost_settings: {
+        Row: {
+          bot_user_id: string | null
+          enabled: boolean
+          id: number
+          last_run_at: string | null
+          post_hour_utc: number
+          updated_at: string
+        }
+        Insert: {
+          bot_user_id?: string | null
+          enabled?: boolean
+          id?: number
+          last_run_at?: string | null
+          post_hour_utc?: number
+          updated_at?: string
+        }
+        Update: {
+          bot_user_id?: string | null
+          enabled?: boolean
+          id?: number
+          last_run_at?: string | null
+          post_hour_utc?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       follows: {
         Row: {
           created_at: string
@@ -264,6 +359,7 @@ export type Database = {
           created_at: string
           id: string
           image_url: string | null
+          is_autoposted: boolean
           link_url: string | null
           parent_ship_id: string | null
           post_type: string
@@ -276,6 +372,7 @@ export type Database = {
           created_at?: string
           id?: string
           image_url?: string | null
+          is_autoposted?: boolean
           link_url?: string | null
           parent_ship_id?: string | null
           post_type?: string
@@ -288,6 +385,7 @@ export type Database = {
           created_at?: string
           id?: string
           image_url?: string | null
+          is_autoposted?: boolean
           link_url?: string | null
           parent_ship_id?: string | null
           post_type?: string
