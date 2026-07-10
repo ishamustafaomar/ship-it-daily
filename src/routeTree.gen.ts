@@ -29,6 +29,7 @@ import { Route as AuthenticatedUUsernameRouteImport } from './routes/_authentica
 import { Route as AuthenticatedSShipIdRouteImport } from './routes/_authenticated/s.$shipId'
 import { Route as AdminAdminUsersRouteImport } from './routes/_admin/admin.users'
 import { Route as AdminAdminShipsRouteImport } from './routes/_admin/admin.ships'
+import { Route as AdminAdminReportsRouteImport } from './routes/_admin/admin.reports'
 import { Route as AdminAdminActivityRouteImport } from './routes/_admin/admin.activity'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
@@ -136,6 +137,11 @@ const AdminAdminShipsRoute = AdminAdminShipsRouteImport.update({
   path: '/admin/ships',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminAdminReportsRoute = AdminAdminReportsRouteImport.update({
+  id: '/admin/reports',
+  path: '/admin/reports',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const AdminAdminActivityRoute = AdminAdminActivityRouteImport.update({
   id: '/admin/activity',
   path: '/admin/activity',
@@ -175,6 +181,7 @@ export interface FileRoutesByFullPath {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/admin/activity': typeof AdminAdminActivityRoute
+  '/admin/reports': typeof AdminAdminReportsRoute
   '/admin/ships': typeof AdminAdminShipsRoute
   '/admin/users': typeof AdminAdminUsersRouteWithChildren
   '/s/$shipId': typeof AuthenticatedSShipIdRoute
@@ -199,6 +206,7 @@ export interface FileRoutesByTo {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/admin/activity': typeof AdminAdminActivityRoute
+  '/admin/reports': typeof AdminAdminReportsRoute
   '/admin/ships': typeof AdminAdminShipsRoute
   '/admin/users': typeof AdminAdminUsersRouteWithChildren
   '/s/$shipId': typeof AuthenticatedSShipIdRoute
@@ -226,6 +234,7 @@ export interface FileRoutesById {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/_admin/admin/activity': typeof AdminAdminActivityRoute
+  '/_admin/admin/reports': typeof AdminAdminReportsRoute
   '/_admin/admin/ships': typeof AdminAdminShipsRoute
   '/_admin/admin/users': typeof AdminAdminUsersRouteWithChildren
   '/_authenticated/s/$shipId': typeof AuthenticatedSShipIdRoute
@@ -252,6 +261,7 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/admin/activity'
+    | '/admin/reports'
     | '/admin/ships'
     | '/admin/users'
     | '/s/$shipId'
@@ -276,6 +286,7 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/admin/activity'
+    | '/admin/reports'
     | '/admin/ships'
     | '/admin/users'
     | '/s/$shipId'
@@ -302,6 +313,7 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/_admin/admin/activity'
+    | '/_admin/admin/reports'
     | '/_admin/admin/ships'
     | '/_admin/admin/users'
     | '/_authenticated/s/$shipId'
@@ -467,6 +479,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAdminShipsRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/_admin/admin/reports': {
+      id: '/_admin/admin/reports'
+      path: '/admin/reports'
+      fullPath: '/admin/reports'
+      preLoaderRoute: typeof AdminAdminReportsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/_admin/admin/activity': {
       id: '/_admin/admin/activity'
       path: '/admin/activity'
@@ -512,6 +531,7 @@ const AdminAdminUsersRouteWithChildren = AdminAdminUsersRoute._addFileChildren(
 
 interface AdminRouteRouteChildren {
   AdminAdminActivityRoute: typeof AdminAdminActivityRoute
+  AdminAdminReportsRoute: typeof AdminAdminReportsRoute
   AdminAdminShipsRoute: typeof AdminAdminShipsRoute
   AdminAdminUsersRoute: typeof AdminAdminUsersRouteWithChildren
   AdminAdminIndexRoute: typeof AdminAdminIndexRoute
@@ -519,6 +539,7 @@ interface AdminRouteRouteChildren {
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminAdminActivityRoute: AdminAdminActivityRoute,
+  AdminAdminReportsRoute: AdminAdminReportsRoute,
   AdminAdminShipsRoute: AdminAdminShipsRoute,
   AdminAdminUsersRoute: AdminAdminUsersRouteWithChildren,
   AdminAdminIndexRoute: AdminAdminIndexRoute,
