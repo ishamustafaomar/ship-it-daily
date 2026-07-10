@@ -1,97 +1,60 @@
-# Shipped — Build Plan
+## Admin Panel for ShippedIn
 
-A build-in-public social feed for AI-tool builders. Dark-first, one electric accent, monospace tool tags, three-column responsive layout.
+A protected `/admin` area, accessible only to `omarmlaptop@gmail.com`, for monitoring signups, posts, and platform health.
 
-## Design system
+### Access control
 
-- Dark by default (no theme toggle needed). Background near-black, elevated surfaces one step up, hairline borders.
-- Single electric accent (proposing electric lime `oklch(0.88 0.24 130)` — high-signal on dark, distinct from typical purple/blue AI apps). Used for the flame, active nav, primary CTA, like/reship active states.
-- Type: Inter for UI, JetBrains Mono for tool tags, timestamps, and streak counts.
-- Tool tags render as `[ Lovable ]` style mono chips with a subtle border.
+- Add a `user_roles` table + `app_role` enum (`admin`, `user`) with a `has_role(user_id, role)` security-definer function (safe pattern, no privilege escalation via profiles).
+- Seed `omarmlaptop@gmail.com` as `admin` via a migration that looks up the user in `auth.users` by email.
+- Also add an auth trigger: on new user creation, if email = `omarmlaptop@gmail.com` AND email is verified, auto-grant admin (so re-signup still works).
+- Gate `/admin/*` routes with a `beforeLoad` check calling a `requireAdmin` server fn (uses `requireSupabaseAuth` + `has_role`). Non-admins get redirected home.
+- All admin data fetches go through server functions that re-check admin role server-side (defense in depth — never trust the client).
 
-## Backend (Lovable Cloud)
+### Pages
 
-Enable Cloud, then one migration creates the full schema:
+**`/admin` — Dashboard**
+- Top-line stats: total users, new users (24h / 7d / 30d), total ships, ships today, active streaks, total likes, total follows.
+- Simple sparkline / bar chart: signups per day (last 30d), ships per day (last 30d).
+- Top tools used (count of ships by `tool_tag`).
+- Top topic tags (last 7d).
 
-- Tables: `profiles`, `ships`, `likes`, `reships`, `follows`, `notifications` exactly as specified.
-- GRANTs on every public table to `authenticated` + `service_role`; `anon` SELECT only on `profiles` and `ships` (public read for share links).
-- RLS: authenticated read-all; insert/update/delete only own rows (`auth.uid() = user_id` / `author_id` / `follower_id` / `id` for profiles). Notifications: recipient can select + update `read`; anyone authenticated can insert (created by triggers as the acting user).
-- Trigger `handle_new_user` on `auth.users` insert → creates empty profile row (username filled in by onboarding step).
-- Trigger `handle_ship_streak` on `ships` insert where `parent_ship_id IS NULL` → applies the specified streak logic on the author's profile.
-- Triggers `notify_like`, `notify_reship`, `notify_reply`, `notify_follow` → insert notification rows (skip self-actions).
-- Storage bucket `ship-images` (public read, authenticated write to own folder `${uid}/...`).
-- Auth: email/password + Google (via `supabase--configure_social_auth`).
+**`/admin/users` — Users table**
+- Columns: avatar, display name, @username, email, signed-up date, last ship date, streak, ship count, follower count.
+- Search by username / display name / email.
+- Sort by signup date, streak, ship count.
+- Click a row → user detail drawer with their recent ships, focus tags, bio, and quick actions.
 
-## Routes (TanStack file-based)
+**`/admin/users/$id` — User detail**
+- Full profile info + all their ships (paginated).
+- Actions: delete a ship, delete the account (calls Auth Admin API via `supabaseAdmin` loaded inside the handler).
 
-Public:
-- `/` — landing/marketing if signed out; redirects to `/home` if signed in.
-- `/auth` — sign in / sign up (email + Google).
-- `/u/$username` — public profile + that user's ships.
-- `/s/$shipId` — single ship + replies (shareable).
+**`/admin/ships` — Content feed**
+- All ships across the platform, newest first, filterable by post_type, tool_tag, and topic tag.
+- Search body text.
+- Quick delete action per ship (with confirm).
 
-Authenticated (`_authenticated/`):
-- `/home` — three-column app shell with Following / For You tabs.
-- `/explore` — For You global feed, plus trending tools.
-- `/notifications` — list, marks read on view.
-- `/profile` — redirects to own `/u/$username`.
-- `/onboarding` — username + display name capture on first sign-in (redirect target if profile.username is null).
+**`/admin/activity` — Recent activity**
+- Combined stream of newest signups, ships, follows, likes for a live "what's happening" view.
 
-## Layout
+### Also useful (recommendations)
 
-App shell (`_authenticated/route.tsx`):
+- **Report/flag button** on ship cards (adds a `reports` table) + a `/admin/reports` queue. Not built yet, but wire the table so moderation is ready.
+- **Health checks**: users with 0 ships after 7 days (activation funnel), streaks broken today, ships with broken/non-http links.
+- **Export CSV** button on users and ships tables.
+- **Impersonation-safe view**: link to a user's public profile from the admin row (no true impersonation — that's a security risk).
 
-```text
-┌───────────┬────────────────────────┬──────────────┐
-│  Nav rail │  Compose + Feed        │  Streak card │
-│  Home     │  [Following][For You]  │  Suggestions │
-│  Explore  │                        │  Trending    │
-│  Notif •3 │                        │              │
-│  Profile  │                        │              │
-│ [+ Ship]  │                        │              │
-└───────────┴────────────────────────┴──────────────┘
-```
+### Technical notes
 
-- Desktop ≥1024px: 3 columns (nav 240, feed 600, right 320).
-- Tablet: 2 columns (nav collapses to icons, right column hides, accessible via drawer).
-- Mobile: single column, bottom tab bar (Home/Explore/Notif/Profile), floating "+" for new ship, streak visible at top of Home.
+- New table: `user_roles(user_id, role)` + `app_role` enum + `has_role()` SECURITY DEFINER function + owner-scoped RLS + service_role grants.
+- New table: `reports(id, reporter_id, ship_id, reason, status, created_at)` with RLS (users insert their own, admins read all via `has_role`).
+- Migration seeds the admin role by email lookup in `auth.users`; if the account doesn't exist yet, the auth trigger handles it on first sign-in.
+- New server fns in `src/lib/admin.functions.ts`: `requireAdmin` middleware, `getAdminStats`, `listAdminUsers`, `getAdminUser`, `listAdminShips`, `deleteShip`, `deleteUser`, `listReports`, `resolveReport`. Admin fns dynamically import `@/integrations/supabase/client.server` inside handlers.
+- New route tree: `src/routes/_admin/route.tsx` (pathless gate) with children `admin.tsx`, `admin.users.tsx`, `admin.users.$id.tsx`, `admin.ships.tsx`, `admin.activity.tsx`, `admin.reports.tsx`.
+- Add an "Admin" link in `AppShell` that only renders when `has_role('admin')` is true (via a small client hook).
+- Charts: use `recharts` (already common in shadcn stack) — install if missing.
 
-## Features & wiring
+### Out of scope for this pass
 
-- **Auth**: `supabase.auth` with email + Google via lovable broker; root `onAuthStateChange` invalidates router/query. On sign-in, check profile.username → route to `/onboarding` if null.
-- **Compose**: textarea (280 char soft limit), tool-tag select (Lovable, Cursor, Bolt, Replit, v0, Other), optional link URL, optional image upload to `ship-images/${uid}/${uuid}`. Server fn `createShip` inserts row; streak update is trigger-driven.
-- **Feed**: TanStack Query with `useInfiniteQuery`, page size 20, cursor by `created_at`. Following tab joins `follows` on `author_id`; For You is global newest.
-- **Ship card**: avatar, display_name, @username, mono timestamp, body, tool-tag chip, optional link preview, optional image, action row (reply, reship, like, share). Reply opens inline composer that sets `parent_ship_id`.
-- **Ship detail `/s/$shipId`**: parent ship + reply thread (one level), inline reply composer.
-- **Like / Reship / Follow**: optimistic via `useMutation` with `onMutate` cache patch, rollback on error, invalidate on settle. Counts stored derived (COUNT queries via view or per-row `count(*)` — using a small view `ship_counts` for like/reship/reply totals).
-- **Profile**: avatar, display_name, @username, bio, `building_now` line, streak with flame (`streak_count` + longest), follow button, ship list.
-- **Notifications**: query with unread count badge in nav; opening page marks all read (`update ... set read=true where recipient_id=auth.uid()`).
-- **Right column**:
-  - Streak card: current streak + flame, longest, next-day countdown.
-  - Builders to follow: 5 profiles the user doesn't follow yet, ordered by recent ship activity.
-  - Trending tools: `select tool_tag, count(*) from ships where created_at > now()-interval '7 days' group by tool_tag order by count desc limit 5`.
-
-## Technical details
-
-- Server functions in `src/lib/*.functions.ts` using `requireSupabaseAuth` for all writes and personalized reads (feed, notifications, suggestions). Public reads (`/u/$username`, `/s/$shipId`) via server publishable client with narrow `TO anon` SELECT policies on `profiles` and `ships`.
-- Head metadata per route; `/s/$shipId` and `/u/$username` derive OG title/description from loader data.
-- Image upload path validated in RLS: `storage.foldername(name)[1] = auth.uid()::text`.
-- Root `__root.tsx` head updated to real title/description ("Shipped — build in public with AI").
-- Toasts via existing shadcn `sonner` for errors; optimistic UI hides latency on happy path.
-
-## Scope guardrails (v1)
-
-Included: auth+onboarding, compose w/ image, feed (Following/For You), ship detail + one-level replies, like, reship, follow, profile, notifications, streak, trending tools, builders to follow.
-
-Excluded (as specified): DMs, search beyond Explore, quote-reships, edit/delete UI beyond own-ship delete menu, email digests, deeper reply threading.
-
-## Build order
-
-1. Enable Cloud, run schema migration (tables, GRANTs, RLS, triggers, storage bucket).
-2. Configure Google auth.
-3. Design tokens in `src/styles.css` (dark defaults, accent, mono font via `<link>` in `__root.tsx`).
-4. Auth pages + onboarding + `_authenticated` shell.
-5. Server fns: ships CRUD, feed queries, likes/reships/follows, notifications, suggestions, trending.
-6. Compose + ShipCard + feed with infinite scroll and optimistic mutations.
-7. Profile, ship detail, notifications, right rail.
-8. Mobile layout pass + verification.
+- No email notifications to admin.
+- No bulk actions.
+- No audit log of admin actions (can add later).
