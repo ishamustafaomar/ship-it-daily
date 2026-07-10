@@ -52,11 +52,16 @@ function HomePage() {
   const activeTab = activeTag || activeTool ? "for_you" : tab;
   const meFn = useServerFn(getMyProfile);
   const feedFn = useServerFn(getFeed);
-  const { data: me } = useQuery({ queryKey: ["me"], queryFn: () => meFn() });
+  const { data: me, isFetching: meFetching } = useQuery({
+    queryKey: ["me"],
+    queryFn: () => meFn(),
+  });
 
   useEffect(() => {
-    if (me && !me.username) navigate({ to: "/onboarding" });
-  }, [me, navigate]);
+    // Only redirect once we have fresh data — avoids a bounce when the cache
+    // is stale right after onboarding save.
+    if (me && !me.username && !meFetching) navigate({ to: "/onboarding" });
+  }, [me, meFetching, navigate]);
 
   const feed = useInfiniteQuery({
     queryKey: ["feed", activeTab, activeTag, activeTool],
