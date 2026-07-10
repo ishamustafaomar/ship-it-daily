@@ -454,3 +454,32 @@ export const getRightRail = createServerFn({ method: "GET" })
 
     return { me: meRes.data, suggestions, trending };
   });
+
+// ============= Topic tag suggestions (for composer autocomplete) =============
+export const getTagSuggestions = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) =>
+    z.object({ q: z.string().optional() }).parse(d ?? {}),
+  )
+  .handler(async ({ context, data }) => {
+    // Pull recent ships and count topic tag frequencies.
+    const { data: rows } = await context.supabase
+      .from("ships")
+      .select("topic_tags")
+      .not("topic_tags", "eq", "{}")
+      .order("created_at", { ascending: false })
+      .limit(500);
+    const counts: Record<string, number> = {};
+    (rows ?? []).forEach((r: any) => {
+      (r.topic_tags ?? []).forEach((t: string) => {
+        counts[t] = (counts[t] ?? 0) + 1;
+      });
+    });
+    const q = (data.q ?? "").toLowerCase().trim();
+    const items = Object.entries(counts)
+      .filter(([tag]) => (q ? tag.includes(q) : true))
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 12)
+      .map(([tag, count]) => ({ tag, count }));
+    return { items };
+  });
