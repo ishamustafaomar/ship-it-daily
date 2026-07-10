@@ -188,7 +188,7 @@ export function ShipCard({
                 <Link
                   key={t}
                   to="/home"
-                  search={{ tag: t }}
+                  search={{ tab: "for_you", tag: t, tool: "" }}
                   onClick={(e) => e.stopPropagation()}
                   className="rounded-full bg-primary/10 px-2 py-0.5 font-mono text-[11px] text-primary hover:bg-primary/20"
                 >
