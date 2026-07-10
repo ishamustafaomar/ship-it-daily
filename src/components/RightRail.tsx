@@ -84,10 +84,15 @@ export function RightRail() {
             <p className="text-xs text-muted-foreground">No trending tools yet this week.</p>
           ) : null}
           {(data?.trending ?? []).map((t: any) => (
-            <div key={t.tag} className="flex items-center justify-between font-mono text-sm">
+            <Link
+              key={t.tag}
+              to="/home"
+              search={{ tab: "for_you", tag: "", tool: t.tag }}
+              className="flex items-center justify-between rounded-md px-1 py-1 font-mono text-sm hover:bg-secondary"
+            >
               <span className="text-foreground">[ {t.tag} ]</span>
               <span className="text-muted-foreground">{t.count} ships</span>
-            </div>
+            </Link>
           ))}
         </div>
       </section>
