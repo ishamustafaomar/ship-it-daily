@@ -1,10 +1,10 @@
 import { Link } from "@tanstack/react-router";
-import { Heart, MessageCircle, Repeat2, Link as LinkIcon, MoreHorizontal, Trash2 } from "lucide-react";
+import { Heart, MessageCircle, Repeat2, Link as LinkIcon, MoreHorizontal, Trash2, SmilePlus } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import type { FeedShip } from "@/lib/api.functions";
-import { deleteShip, toggleLike, toggleReship } from "@/lib/api.functions";
+import { deleteShip, toggleLike, toggleReship, toggleReaction, REACTION_EMOJIS } from "@/lib/api.functions";
 import { UserAvatar } from "./UserAvatar";
 import { ToolTag } from "./ToolTag";
 import { timeAgo } from "@/lib/format";
@@ -14,6 +14,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 function nf(n: number) {
   if (n < 1000) return String(n);
@@ -36,6 +37,7 @@ export function ShipCard({
   const like = useServerFn(toggleLike);
   const reship = useServerFn(toggleReship);
   const del = useServerFn(deleteShip);
+  const react = useServerFn(toggleReaction);
 
   const patch = (fn: (s: FeedShip) => FeedShip) => {
     qc.setQueriesData({ queryKey: ["feed"] }, (data: any) => {
@@ -89,6 +91,30 @@ export function ShipCard({
         reship_count: s.reship_count + (s.reshipped_by_me ? -1 : 1),
       }));
       toast.error("Could not reship");
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ["feed"] }),
+  });
+
+  const reactM = useMutation({
+    mutationFn: async (vars: { emoji: string; active: boolean }) =>
+      react({ data: { shipId: ship.id, emoji: vars.emoji as any, active: vars.active } }),
+    onMutate: ({ emoji, active }) => {
+      patch((s) => {
+        const existing = s.reactions.find((r) => r.emoji === emoji);
+        let next = s.reactions.slice();
+        if (existing) {
+          const count = existing.count + (active ? 1 : -1);
+          if (count <= 0) next = next.filter((r) => r.emoji !== emoji);
+          else next = next.map((r) => (r.emoji === emoji ? { ...r, count, mine: active } : r));
+        } else if (active) {
+          next.push({ emoji, count: 1, mine: true });
+        }
+        return { ...s, reactions: next.sort((a, b) => b.count - a.count) };
+      });
+    },
+    onError: () => {
+      toast.error("Could not update reaction");
+      qc.invalidateQueries({ queryKey: ["feed"] });
     },
     onSettled: () => qc.invalidateQueries({ queryKey: ["feed"] }),
   });
@@ -199,6 +225,25 @@ export function ShipCard({
           ) : null}
 
           {!compact ? (
+            <>
+            {ship.reactions.length > 0 ? (
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {ship.reactions.map((r) => (
+                  <button
+                    key={r.emoji}
+                    onClick={() => reactM.mutate({ emoji: r.emoji, active: !r.mine })}
+                    className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs transition-colors min-h-[28px] ${
+                      r.mine
+                        ? "border-primary/60 bg-primary/15 text-primary"
+                        : "border-border bg-secondary/40 text-foreground hover:bg-secondary"
+                    }`}
+                  >
+                    <span>{r.emoji}</span>
+                    <span className="font-mono">{r.count}</span>
+                  </button>
+                ))}
+              </div>
+            ) : null}
             <div className="mt-3 flex items-center gap-6 text-muted-foreground">
               <button
                 onClick={() => onReply?.(ship)}
@@ -225,7 +270,36 @@ export function ShipCard({
                 <Heart className={`h-4 w-4 ${ship.liked_by_me ? "fill-current" : ""}`} />
                 <span className="font-mono">{nf(ship.like_count)}</span>
               </button>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button
+                    aria-label="Add reaction"
+                    className="inline-flex items-center gap-1.5 text-xs hover:text-primary"
+                  >
+                    <SmilePlus className="h-4 w-4" />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent align="start" className="w-auto p-1">
+                  <div className="flex gap-1">
+                    {REACTION_EMOJIS.map((e) => {
+                      const mine = ship.reactions.find((r) => r.emoji === e)?.mine ?? false;
+                      return (
+                        <button
+                          key={e}
+                          onClick={() => reactM.mutate({ emoji: e, active: !mine })}
+                          className={`h-9 w-9 rounded-md text-lg hover:bg-secondary ${
+                            mine ? "bg-primary/15" : ""
+                          }`}
+                        >
+                          {e}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </PopoverContent>
+              </Popover>
             </div>
+            </>
           ) : null}
         </div>
       </div>

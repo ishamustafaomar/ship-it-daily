@@ -39,7 +39,11 @@ export type FeedShip = {
   reply_count: number;
   liked_by_me: boolean;
   reshipped_by_me: boolean;
+  reactions: { emoji: string; count: number; mine: boolean }[];
 };
+
+export const REACTION_EMOJIS = ["🔥", "🚀", "👏", "💡", "🎉"] as const;
+export type ReactionEmoji = (typeof REACTION_EMOJIS)[number];
 
 // Normalize a tag: lowercase, trim, non-alnum → dash, collapse dashes, max 24.
 export function normalizeTag(input: string): string {
@@ -78,6 +82,19 @@ async function decorateShips(
       supabase.from("reships").select("ship_id").eq("user_id", userId).in("ship_id", ids),
       supabase.from("profiles").select("id, username, display_name, avatar_url").in("id", authorIds),
     ]);
+
+  const [reactionsRes, myReactionsRes] = await Promise.all([
+    supabase.from("reactions").select("ship_id, emoji").in("ship_id", ids),
+    supabase.from("reactions").select("ship_id, emoji").eq("user_id", userId).in("ship_id", ids),
+  ]);
+  const reactionMap: Record<string, Record<string, number>> = {};
+  (reactionsRes.data ?? []).forEach((r: any) => {
+    reactionMap[r.ship_id] ??= {};
+    reactionMap[r.ship_id][r.emoji] = (reactionMap[r.ship_id][r.emoji] ?? 0) + 1;
+  });
+  const myReactionSet = new Set(
+    (myReactionsRes.data ?? []).map((r: any) => `${r.ship_id}:${r.emoji}`),
+  );
 
   const count = (arr: any[] | null, key = "ship_id") => {
     const m: Record<string, number> = {};
@@ -124,6 +141,13 @@ async function decorateShips(
     reply_count: replyMap[r.id] ?? 0,
     liked_by_me: myLikes.has(r.id),
     reshipped_by_me: myReships.has(r.id),
+    reactions: Object.entries(reactionMap[r.id] ?? {})
+      .map(([emoji, count]) => ({
+        emoji,
+        count: count as number,
+        mine: myReactionSet.has(`${r.id}:${emoji}`),
+      }))
+      .sort((a, b) => b.count - a.count),
   }));
 }
 
@@ -358,6 +382,35 @@ export const toggleReship = createServerFn({ method: "POST" })
       await context.supabase.from("reships").insert({ ship_id: data.shipId, user_id: context.userId }).select();
     } else {
       await context.supabase.from("reships").delete().eq("ship_id", data.shipId).eq("user_id", context.userId);
+    }
+    return { ok: true };
+  });
+
+// ============= Toggle emoji reaction =============
+export const toggleReaction = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) =>
+    z
+      .object({
+        shipId: z.string().uuid(),
+        emoji: z.enum(["🔥", "🚀", "👏", "💡", "🎉"]),
+        active: z.boolean(),
+      })
+      .parse(d),
+  )
+  .handler(async ({ context, data }) => {
+    if (data.active) {
+      await context.supabase
+        .from("reactions")
+        .insert({ ship_id: data.shipId, user_id: context.userId, emoji: data.emoji })
+        .select();
+    } else {
+      await context.supabase
+        .from("reactions")
+        .delete()
+        .eq("ship_id", data.shipId)
+        .eq("user_id", context.userId)
+        .eq("emoji", data.emoji);
     }
     return { ok: true };
   });
