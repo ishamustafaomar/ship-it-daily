@@ -26,6 +26,7 @@ export type FeedShip = {
   image_signed_url: string | null;
   parent_ship_id: string | null;
   post_type: "ship" | "ask" | "feedback" | "discussion";
+  topic_tags: string[];
   created_at: string;
   author: {
     id: string;
@@ -39,6 +40,25 @@ export type FeedShip = {
   liked_by_me: boolean;
   reshipped_by_me: boolean;
 };
+
+// Normalize a tag: lowercase, trim, non-alnum → dash, collapse dashes, max 24.
+export function normalizeTag(input: string): string {
+  return input
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 24);
+}
+const tagArray = (max: number) =>
+  z
+    .array(z.string())
+    .max(max)
+    .transform((arr) =>
+      Array.from(
+        new Set(arr.map(normalizeTag).filter((t) => t.length >= 2)),
+      ).slice(0, max),
+    );
 
 async function decorateShips(
   supabase: any,
@@ -96,6 +116,7 @@ async function decorateShips(
     image_signed_url: r.image_url ? signedMap[r.image_url] ?? null : null,
     parent_ship_id: r.parent_ship_id,
     post_type: (r.post_type ?? "ship") as FeedShip["post_type"],
+    topic_tags: (r.topic_tags ?? []) as string[],
     created_at: r.created_at,
     author: authors[r.author_id] ?? { id: r.author_id, username: null, display_name: null, avatar_url: null },
     like_count: likeMap[r.id] ?? 0,
