@@ -8,6 +8,19 @@ export const Route = createFileRoute("/api/public/hooks/autopost")({
     handlers: {
       POST: async ({ request }) => {
         try {
+          const expected = process.env.CRON_SECRET;
+          if (!expected) {
+            return json({ ok: false, error: "server not configured" }, 500);
+          }
+          const auth = request.headers.get("authorization") ?? "";
+          const bearer = auth.toLowerCase().startsWith("bearer ")
+            ? auth.slice(7).trim()
+            : "";
+          const headerSecret = request.headers.get("x-cron-secret") ?? "";
+          const provided = bearer || headerSecret;
+          if (!provided || provided !== expected) {
+            return json({ ok: false, error: "unauthorized" }, 401);
+          }
           const body = await request.json().catch(() => ({}));
           const force = !!body?.force;
 
