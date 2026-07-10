@@ -212,9 +212,10 @@ export const getFeed = createServerFn({ method: "GET" })
   .inputValidator((d) =>
     z
       .object({
-        tab: z.enum(["following", "for_you"]),
+        tab: z.enum(["following", "for_you", "relevant"]),
         cursor: z.string().nullable().optional(),
         limit: z.number().min(1).max(50).optional(),
+        tag: z.string().nullable().optional(),
       })
       .parse(d),
   )
@@ -236,6 +237,22 @@ export const getFeed = createServerFn({ method: "GET" })
       ids.push(context.userId);
       query = query.in("author_id", ids);
     }
+    if (data.tab === "relevant" && !data.tag) {
+      const { data: me } = await context.supabase
+        .from("profiles")
+        .select("focus_tags")
+        .eq("id", context.userId)
+        .maybeSingle();
+      const focus = (me?.focus_tags ?? []) as string[];
+      if (focus.length === 0) {
+        return { items: [], nextCursor: null, needsFocus: true };
+      }
+      query = query.overlaps("topic_tags", focus);
+    }
+    if (data.tag) {
+      const t = normalizeTag(data.tag);
+      if (t) query = query.contains("topic_tags", [t]);
+    }
     const { data: rows, error } = await query;
     if (error) throw error;
     const hasMore = (rows?.length ?? 0) > limit;
@@ -244,6 +261,7 @@ export const getFeed = createServerFn({ method: "GET" })
     return {
       items,
       nextCursor: hasMore ? slice[slice.length - 1].created_at : null,
+      needsFocus: false,
     };
   });
 
@@ -281,6 +299,7 @@ export const createShip = createServerFn({ method: "POST" })
         image_url: z.string().nullable().optional(),
         parent_ship_id: z.string().uuid().nullable().optional(),
         post_type: z.enum(["ship", "ask", "feedback", "discussion"]).optional(),
+        topic_tags: tagArray(3).optional(),
       })
       .parse(d),
   )
@@ -295,6 +314,7 @@ export const createShip = createServerFn({ method: "POST" })
         image_url: data.image_url ?? null,
         parent_ship_id: data.parent_ship_id ?? null,
         post_type: data.post_type ?? "ship",
+        topic_tags: data.topic_tags ?? [],
       })
       .select()
       .single();
