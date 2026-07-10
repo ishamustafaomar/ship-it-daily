@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { TagInput } from "@/components/TagInput";
 
 export const Route = createFileRoute("/_authenticated/onboarding")({
   component: Onboarding,
@@ -24,6 +25,7 @@ function Onboarding() {
   const [username, setUsername] = useState("");
   const [display, setDisplay] = useState("");
   const [building, setBuilding] = useState("");
+  const [focusTags, setFocusTags] = useState<string[]>([]);
 
   useEffect(() => {
     if (me?.username) navigate({ to: "/home" });
@@ -37,6 +39,7 @@ function Onboarding() {
           username: username.trim().toLowerCase(),
           display_name: display.trim(),
           building_now: building.trim() || null,
+          focus_tags: focusTags,
         },
       }),
     onSuccess: () => {
@@ -95,6 +98,18 @@ function Onboarding() {
             onChange={(e) => setBuilding(e.target.value)}
             placeholder="A social feed for AI builders"
             className="mt-1 resize-none"
+          />
+        </div>
+        <div>
+          <Label className="text-xs">What are you working on? (optional)</Label>
+          <p className="mt-1 mb-2 font-mono text-[11px] text-muted-foreground">
+            up to 5 tags — powers your Relevant feed
+          </p>
+          <TagInput
+            value={focusTags}
+            onChange={setFocusTags}
+            max={5}
+            placeholder="auth, stripe-payments, onboarding…"
           />
         </div>
         <Button type="submit" className="w-full" disabled={save.isPending}>
