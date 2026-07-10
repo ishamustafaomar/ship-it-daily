@@ -123,3 +123,80 @@ function ProfilePage() {
     </AppShell>
   );
 }
+
+function FocusTagsSection({
+  isMe,
+  tags,
+  onSaved,
+}: {
+  isMe: boolean;
+  tags: string[];
+  onSaved: () => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState<string[]>(tags);
+  const saveFn = useServerFn(updateMyProfile);
+  useEffect(() => setDraft(tags), [tags]);
+  const save = useMutation({
+    mutationFn: async () => saveFn({ data: { focus_tags: draft } }),
+    onSuccess: () => {
+      toast.success("Focus updated");
+      setEditing(false);
+      onSaved();
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Failed"),
+  });
+
+  if (!isMe && tags.length === 0) return null;
+
+  return (
+    <div className="mt-3">
+      {editing ? (
+        <div className="space-y-2">
+          <TagInput value={draft} onChange={setDraft} max={5} placeholder="focus tags" />
+          <div className="flex gap-2">
+            <Button size="sm" onClick={() => save.mutate()} disabled={save.isPending}>
+              Save
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => {
+                setDraft(tags);
+                setEditing(false);
+              }}
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="font-mono text-[11px] text-muted-foreground">focus:</span>
+          {tags.length === 0 ? (
+            <span className="font-mono text-[11px] text-muted-foreground">none yet</span>
+          ) : (
+            tags.map((t) => (
+              <Link
+                key={t}
+                to="/home"
+                search={{ tag: t }}
+                className="rounded-full bg-primary/10 px-2 py-0.5 font-mono text-[11px] text-primary hover:bg-primary/20"
+              >
+                #{t}
+              </Link>
+            ))
+          )}
+          {isMe ? (
+            <button
+              onClick={() => setEditing(true)}
+              className="ml-1 font-mono text-[11px] text-muted-foreground hover:text-foreground underline"
+            >
+              edit
+            </button>
+          ) : null}
+        </div>
+      )}
+    </div>
+  );
+}
