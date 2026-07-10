@@ -14,6 +14,7 @@ import { Route as McpRouteImport } from './routes/mcp'
 import { Route as ConnectRouteImport } from './routes/connect'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AdminRouteRouteImport } from './routes/_admin/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as BlogBuildingInPublicWithAiRouteImport } from './routes/blog.building-in-public-with-ai'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
@@ -23,10 +24,16 @@ import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/h
 import { Route as AuthenticatedExploreRouteImport } from './routes/_authenticated/explore'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
+import { Route as AdminAdminIndexRouteImport } from './routes/_admin/admin.index'
 import { Route as AuthenticatedUUsernameRouteImport } from './routes/_authenticated/u.$username'
 import { Route as AuthenticatedSShipIdRouteImport } from './routes/_authenticated/s.$shipId'
+import { Route as AdminAdminUsersRouteImport } from './routes/_admin/admin.users'
+import { Route as AdminAdminShipsRouteImport } from './routes/_admin/admin.ships'
+import { Route as AdminAdminReportsRouteImport } from './routes/_admin/admin.reports'
+import { Route as AdminAdminActivityRouteImport } from './routes/_admin/admin.activity'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
+import { Route as AdminAdminUsersIdRouteImport } from './routes/_admin/admin.users.$id'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -50,6 +57,10 @@ const AuthRoute = AuthRouteImport.update({
 } as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRouteRoute = AdminRouteRouteImport.update({
+  id: '/_admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -101,6 +112,11 @@ const Char91DotmcpChar93ListToolsRoute =
     path: '/.mcp/list-tools',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AdminAdminIndexRoute = AdminAdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const AuthenticatedUUsernameRoute = AuthenticatedUUsernameRouteImport.update({
   id: '/u/$username',
   path: '/u/$username',
@@ -110,6 +126,26 @@ const AuthenticatedSShipIdRoute = AuthenticatedSShipIdRouteImport.update({
   id: '/s/$shipId',
   path: '/s/$shipId',
   getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AdminAdminUsersRoute = AdminAdminUsersRouteImport.update({
+  id: '/admin/users',
+  path: '/admin/users',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminAdminShipsRoute = AdminAdminShipsRouteImport.update({
+  id: '/admin/ships',
+  path: '/admin/ships',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminAdminReportsRoute = AdminAdminReportsRouteImport.update({
+  id: '/admin/reports',
+  path: '/admin/reports',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminAdminActivityRoute = AdminAdminActivityRouteImport.update({
+  id: '/admin/activity',
+  path: '/admin/activity',
+  getParentRoute: () => AdminRouteRoute,
 } as any)
 const Char91DotmcpChar93InvokeToolToolRoute =
   Char91DotmcpChar93InvokeToolToolRouteImport.update({
@@ -121,6 +157,11 @@ const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
   id: '/.lovable/oauth/consent',
   path: '/.lovable/oauth/consent',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AdminAdminUsersIdRoute = AdminAdminUsersIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AdminAdminUsersRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -139,8 +180,14 @@ export interface FileRoutesByFullPath {
   '/blog/building-in-public-with-ai': typeof BlogBuildingInPublicWithAiRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/admin/activity': typeof AdminAdminActivityRoute
+  '/admin/reports': typeof AdminAdminReportsRoute
+  '/admin/ships': typeof AdminAdminShipsRoute
+  '/admin/users': typeof AdminAdminUsersRouteWithChildren
   '/s/$shipId': typeof AuthenticatedSShipIdRoute
   '/u/$username': typeof AuthenticatedUUsernameRoute
+  '/admin/': typeof AdminAdminIndexRoute
+  '/admin/users/$id': typeof AdminAdminUsersIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -158,12 +205,19 @@ export interface FileRoutesByTo {
   '/blog/building-in-public-with-ai': typeof BlogBuildingInPublicWithAiRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/admin/activity': typeof AdminAdminActivityRoute
+  '/admin/reports': typeof AdminAdminReportsRoute
+  '/admin/ships': typeof AdminAdminShipsRoute
+  '/admin/users': typeof AdminAdminUsersRouteWithChildren
   '/s/$shipId': typeof AuthenticatedSShipIdRoute
   '/u/$username': typeof AuthenticatedUUsernameRoute
+  '/admin': typeof AdminAdminIndexRoute
+  '/admin/users/$id': typeof AdminAdminUsersIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_admin': typeof AdminRouteRouteWithChildren
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/connect': typeof ConnectRoute
@@ -179,8 +233,14 @@ export interface FileRoutesById {
   '/blog/building-in-public-with-ai': typeof BlogBuildingInPublicWithAiRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/_admin/admin/activity': typeof AdminAdminActivityRoute
+  '/_admin/admin/reports': typeof AdminAdminReportsRoute
+  '/_admin/admin/ships': typeof AdminAdminShipsRoute
+  '/_admin/admin/users': typeof AdminAdminUsersRouteWithChildren
   '/_authenticated/s/$shipId': typeof AuthenticatedSShipIdRoute
   '/_authenticated/u/$username': typeof AuthenticatedUUsernameRoute
+  '/_admin/admin/': typeof AdminAdminIndexRoute
+  '/_admin/admin/users/$id': typeof AdminAdminUsersIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -200,8 +260,14 @@ export interface FileRouteTypes {
     | '/blog/building-in-public-with-ai'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
+    | '/admin/activity'
+    | '/admin/reports'
+    | '/admin/ships'
+    | '/admin/users'
     | '/s/$shipId'
     | '/u/$username'
+    | '/admin/'
+    | '/admin/users/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -219,11 +285,18 @@ export interface FileRouteTypes {
     | '/blog/building-in-public-with-ai'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
+    | '/admin/activity'
+    | '/admin/reports'
+    | '/admin/ships'
+    | '/admin/users'
     | '/s/$shipId'
     | '/u/$username'
+    | '/admin'
+    | '/admin/users/$id'
   id:
     | '__root__'
     | '/'
+    | '/_admin'
     | '/_authenticated'
     | '/auth'
     | '/connect'
@@ -239,12 +312,19 @@ export interface FileRouteTypes {
     | '/blog/building-in-public-with-ai'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
+    | '/_admin/admin/activity'
+    | '/_admin/admin/reports'
+    | '/_admin/admin/ships'
+    | '/_admin/admin/users'
     | '/_authenticated/s/$shipId'
     | '/_authenticated/u/$username'
+    | '/_admin/admin/'
+    | '/_admin/admin/users/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRouteRoute: typeof AdminRouteRouteWithChildren
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   ConnectRoute: typeof ConnectRoute
@@ -292,6 +372,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_admin': {
+      id: '/_admin'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AdminRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -357,6 +444,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_admin/admin/': {
+      id: '/_admin/admin/'
+      path: '/admin'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminAdminIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/_authenticated/u/$username': {
       id: '/_authenticated/u/$username'
       path: '/u/$username'
@@ -370,6 +464,34 @@ declare module '@tanstack/react-router' {
       fullPath: '/s/$shipId'
       preLoaderRoute: typeof AuthenticatedSShipIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_admin/admin/users': {
+      id: '/_admin/admin/users'
+      path: '/admin/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminAdminUsersRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/_admin/admin/ships': {
+      id: '/_admin/admin/ships'
+      path: '/admin/ships'
+      fullPath: '/admin/ships'
+      preLoaderRoute: typeof AdminAdminShipsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/_admin/admin/reports': {
+      id: '/_admin/admin/reports'
+      path: '/admin/reports'
+      fullPath: '/admin/reports'
+      preLoaderRoute: typeof AdminAdminReportsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/_admin/admin/activity': {
+      id: '/_admin/admin/activity'
+      path: '/admin/activity'
+      fullPath: '/admin/activity'
+      preLoaderRoute: typeof AdminAdminActivityRouteImport
+      parentRoute: typeof AdminRouteRoute
     }
     '/.mcp/invoke-tool/$tool': {
       id: '/.mcp/invoke-tool/$tool'
@@ -385,8 +507,47 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DotlovableOauthConsentRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_admin/admin/users/$id': {
+      id: '/_admin/admin/users/$id'
+      path: '/$id'
+      fullPath: '/admin/users/$id'
+      preLoaderRoute: typeof AdminAdminUsersIdRouteImport
+      parentRoute: typeof AdminAdminUsersRoute
+    }
   }
 }
+
+interface AdminAdminUsersRouteChildren {
+  AdminAdminUsersIdRoute: typeof AdminAdminUsersIdRoute
+}
+
+const AdminAdminUsersRouteChildren: AdminAdminUsersRouteChildren = {
+  AdminAdminUsersIdRoute: AdminAdminUsersIdRoute,
+}
+
+const AdminAdminUsersRouteWithChildren = AdminAdminUsersRoute._addFileChildren(
+  AdminAdminUsersRouteChildren,
+)
+
+interface AdminRouteRouteChildren {
+  AdminAdminActivityRoute: typeof AdminAdminActivityRoute
+  AdminAdminReportsRoute: typeof AdminAdminReportsRoute
+  AdminAdminShipsRoute: typeof AdminAdminShipsRoute
+  AdminAdminUsersRoute: typeof AdminAdminUsersRouteWithChildren
+  AdminAdminIndexRoute: typeof AdminAdminIndexRoute
+}
+
+const AdminRouteRouteChildren: AdminRouteRouteChildren = {
+  AdminAdminActivityRoute: AdminAdminActivityRoute,
+  AdminAdminReportsRoute: AdminAdminReportsRoute,
+  AdminAdminShipsRoute: AdminAdminShipsRoute,
+  AdminAdminUsersRoute: AdminAdminUsersRouteWithChildren,
+  AdminAdminIndexRoute: AdminAdminIndexRoute,
+}
+
+const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
+  AdminRouteRouteChildren,
+)
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedExploreRoute: typeof AuthenticatedExploreRoute
@@ -413,6 +574,7 @@ const AuthenticatedRouteRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRouteRoute: AdminRouteRouteWithChildren,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   ConnectRoute: ConnectRoute,
