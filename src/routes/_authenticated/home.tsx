@@ -150,7 +150,6 @@ function HomePage() {
   );
 }
 
-function EmptyState({ tab, tag }: { tab: "following" | "for_you" | "relevant"; tag: string }) {
 function EmptyState({
   tab,
   tag,
