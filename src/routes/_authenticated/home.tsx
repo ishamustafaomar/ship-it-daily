@@ -185,11 +185,72 @@ function EmptyState({
   );
 }
 
-function FocusPrompt() {
-  return null;
+function FollowingEmpty() {
+  const qc = useQueryClient();
+  const fn = useServerFn(getRightRail);
+  const followFn = useServerFn(toggleFollow);
+  const { data } = useQuery({ queryKey: ["rightRail"], queryFn: () => fn() });
+  const follow = useMutation({
+    mutationFn: async (profileId: string) =>
+      followFn({ data: { profileId, following: true } }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["rightRail"] });
+      qc.invalidateQueries({ queryKey: ["feed"] });
+    },
+  });
+  const suggestions = (data?.suggestions ?? []).slice(0, 5);
+  return (
+    <div className="p-6">
+      <div className="rounded-xl border border-border bg-card p-5">
+        <h2 className="text-base font-semibold text-foreground">
+          Your Following feed is empty
+        </h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Follow a few builders to fill it up. Here are some active shippers:
+        </p>
+        {suggestions.length === 0 ? (
+          <p className="mt-3 text-sm text-muted-foreground">
+            No suggestions yet — check back soon.
+          </p>
+        ) : (
+          <ul className="mt-4 space-y-3">
+            {suggestions.map((p: any) => (
+              <li key={p.id} className="flex items-center gap-3">
+                <Link to="/u/$username" params={{ username: p.username ?? "" }}>
+                  <UserAvatar url={p.avatar_url} name={p.display_name ?? p.username} size={40} />
+                </Link>
+                <div className="min-w-0 flex-1">
+                  <Link
+                    to="/u/$username"
+                    params={{ username: p.username ?? "" }}
+                    className="block truncate text-sm font-medium hover:underline"
+                  >
+                    {p.display_name ?? p.username}
+                  </Link>
+                  <p className="truncate font-mono text-[11px] text-muted-foreground">
+                    @{p.username} · {p.streak_count}🔥
+                    {p.building_now ? ` · ${p.building_now}` : ""}
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  className="h-8 px-3 text-xs"
+                  onClick={() => follow.mutate(p.id)}
+                  disabled={follow.isPending}
+                >
+                  Follow
+                </Button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
+  );
 }
 
-function _FocusPromptImpl() {
+function FocusPrompt() {
   const qc = useQueryClient();
   const saveFn = useServerFn(updateMyProfile);
   const [tags, setTags] = useState<string[]>([]);
