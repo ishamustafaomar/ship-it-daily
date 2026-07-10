@@ -46,7 +46,10 @@ function Onboarding() {
           focus_tags: focusTags,
         },
       }),
-    onSuccess: () => {
+    onSuccess: (updated) => {
+      // Write the fresh profile directly so subscribers (e.g. /home) don't
+      // see the stale `{ username: null }` cache and bounce back here.
+      if (updated) qc.setQueryData(["me"], updated);
       qc.invalidateQueries({ queryKey: ["me"] });
       setStep("first-ship");
     },
