@@ -11,11 +11,21 @@ import { RightRail } from "@/components/RightRail";
 import { Composer } from "@/components/Composer";
 import { ShipCard } from "@/components/ShipCard";
 import { TagInput } from "@/components/TagInput";
-import { getFeed, getMyProfile, updateMyProfile } from "@/lib/api.functions";
+import { UserAvatar } from "@/components/UserAvatar";
+import { Button } from "@/components/ui/button";
+import { Link } from "@tanstack/react-router";
+import {
+  getFeed,
+  getMyProfile,
+  getRightRail,
+  toggleFollow,
+  updateMyProfile,
+} from "@/lib/api.functions";
 
 const searchSchema = z.object({
   tab: fallback(z.enum(["following", "for_you", "relevant"]), "for_you").default("for_you"),
   tag: fallback(z.string(), "").default(""),
+  tool: fallback(z.string(), "").default(""),
 });
 
 export const Route = createFileRoute("/_authenticated/home")({
@@ -36,9 +46,10 @@ export const Route = createFileRoute("/_authenticated/home")({
 
 function HomePage() {
   const navigate = useNavigate();
-  const { tab, tag } = Route.useSearch();
+  const { tab, tag, tool } = Route.useSearch();
   const activeTag = tag.trim();
-  const activeTab = activeTag ? "for_you" : tab;
+  const activeTool = tool.trim();
+  const activeTab = activeTag || activeTool ? "for_you" : tab;
   const meFn = useServerFn(getMyProfile);
   const feedFn = useServerFn(getFeed);
   const { data: me } = useQuery({ queryKey: ["me"], queryFn: () => meFn() });
@@ -48,13 +59,14 @@ function HomePage() {
   }, [me, navigate]);
 
   const feed = useInfiniteQuery({
-    queryKey: ["feed", activeTab, activeTag],
+    queryKey: ["feed", activeTab, activeTag, activeTool],
     queryFn: ({ pageParam }) =>
       feedFn({
         data: {
           tab: activeTab,
           cursor: pageParam as string | null,
           tag: activeTag || null,
+          tool: activeTool || null,
         },
       }),
     initialPageParam: null as string | null,
@@ -72,13 +84,13 @@ function HomePage() {
           {(["following", "for_you", "relevant"] as const).map((t) => (
             <button
               key={t}
-              onClick={() => navigate({ to: "/home", search: { tab: t, tag: "" } })}
+              onClick={() => navigate({ to: "/home", search: { tab: t, tag: "", tool: "" } })}
               className={`relative flex-1 py-3.5 text-sm font-medium transition-colors ${
-                !activeTag && tab === t ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+                !activeTag && !activeTool && tab === t ? "text-foreground" : "text-muted-foreground hover:text-foreground"
               }`}
             >
               {t === "following" ? "Following" : t === "for_you" ? "For You" : "Relevant"}
-              {!activeTag && tab === t ? (
+              {!activeTag && !activeTool && tab === t ? (
                 <span className="absolute inset-x-0 bottom-0 mx-auto h-0.5 w-16 rounded-full bg-primary" />
               ) : null}
             </button>
@@ -86,13 +98,16 @@ function HomePage() {
         </div>
       </div>
 
-      {activeTag ? (
+      {activeTag || activeTool ? (
         <div className="flex items-center justify-between border-b border-border/70 bg-secondary/30 px-4 py-2">
           <span className="font-mono text-sm text-foreground">
-            filtering by <span className="text-primary">#{activeTag}</span>
+            filtering by{" "}
+            <span className="text-primary">
+              {activeTag ? `#${activeTag}` : `[ ${activeTool} ]`}
+            </span>
           </span>
           <button
-            onClick={() => navigate({ to: "/home", search: { tab, tag: "" } })}
+            onClick={() => navigate({ to: "/home", search: { tab, tag: "", tool: "" } })}
             className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-mono text-xs text-muted-foreground hover:bg-secondary hover:text-foreground"
           >
             <X className="h-3 w-3" /> clear
@@ -113,7 +128,11 @@ function HomePage() {
       ) : needsFocus ? (
         <FocusPrompt />
       ) : items.length === 0 ? (
-        <EmptyState tab={activeTab} tag={activeTag} />
+        activeTab === "following" && !activeTag && !activeTool ? (
+          <FollowingEmpty />
+        ) : (
+          <EmptyState tab={activeTab} tag={activeTag} tool={activeTool} />
+        )
       ) : (
         <>
           {items.map((s) => (
@@ -140,18 +159,93 @@ function HomePage() {
   );
 }
 
-function EmptyState({ tab, tag }: { tab: "following" | "for_you" | "relevant"; tag: string }) {
+function EmptyState({
+  tab,
+  tag,
+  tool,
+}: {
+  tab: "following" | "for_you" | "relevant";
+  tag: string;
+  tool: string;
+}) {
   return (
     <div className="p-10 text-center">
       <p className="text-sm text-muted-foreground">
         {tag
           ? `No ships tagged #${tag} yet.`
+          : tool
+          ? `No ships built with [ ${tool} ] yet.`
           : tab === "following"
           ? "Follow some builders and their ships show up here."
           : tab === "relevant"
           ? "No recent ships match your focus tags. Try broader tags or check back later."
           : "No ships yet. Be the first to post!"}
       </p>
+    </div>
+  );
+}
+
+function FollowingEmpty() {
+  const qc = useQueryClient();
+  const fn = useServerFn(getRightRail);
+  const followFn = useServerFn(toggleFollow);
+  const { data } = useQuery({ queryKey: ["rightRail"], queryFn: () => fn() });
+  const follow = useMutation({
+    mutationFn: async (profileId: string) =>
+      followFn({ data: { profileId, following: true } }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["rightRail"] });
+      qc.invalidateQueries({ queryKey: ["feed"] });
+    },
+  });
+  const suggestions = (data?.suggestions ?? []).slice(0, 5);
+  return (
+    <div className="p-6">
+      <div className="rounded-xl border border-border bg-card p-5">
+        <h2 className="text-base font-semibold text-foreground">
+          Your Following feed is empty
+        </h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Follow a few builders to fill it up. Here are some active shippers:
+        </p>
+        {suggestions.length === 0 ? (
+          <p className="mt-3 text-sm text-muted-foreground">
+            No suggestions yet — check back soon.
+          </p>
+        ) : (
+          <ul className="mt-4 space-y-3">
+            {suggestions.map((p: any) => (
+              <li key={p.id} className="flex items-center gap-3">
+                <Link to="/u/$username" params={{ username: p.username ?? "" }}>
+                  <UserAvatar url={p.avatar_url} name={p.display_name ?? p.username} size={40} />
+                </Link>
+                <div className="min-w-0 flex-1">
+                  <Link
+                    to="/u/$username"
+                    params={{ username: p.username ?? "" }}
+                    className="block truncate text-sm font-medium hover:underline"
+                  >
+                    {p.display_name ?? p.username}
+                  </Link>
+                  <p className="truncate font-mono text-[11px] text-muted-foreground">
+                    @{p.username} · {p.streak_count}🔥
+                    {p.building_now ? ` · ${p.building_now}` : ""}
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  className="h-8 px-3 text-xs"
+                  onClick={() => follow.mutate(p.id)}
+                  disabled={follow.isPending}
+                >
+                  Follow
+                </Button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
   );
 }
