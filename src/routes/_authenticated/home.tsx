@@ -11,7 +11,16 @@ import { RightRail } from "@/components/RightRail";
 import { Composer } from "@/components/Composer";
 import { ShipCard } from "@/components/ShipCard";
 import { TagInput } from "@/components/TagInput";
-import { getFeed, getMyProfile, updateMyProfile } from "@/lib/api.functions";
+import { UserAvatar } from "@/components/UserAvatar";
+import { Button } from "@/components/ui/button";
+import { Link } from "@tanstack/react-router";
+import {
+  getFeed,
+  getMyProfile,
+  getRightRail,
+  toggleFollow,
+  updateMyProfile,
+} from "@/lib/api.functions";
 
 const searchSchema = z.object({
   tab: fallback(z.enum(["following", "for_you", "relevant"]), "for_you").default("for_you"),
@@ -177,6 +186,10 @@ function EmptyState({
 }
 
 function FocusPrompt() {
+  return null;
+}
+
+function _FocusPromptImpl() {
   const qc = useQueryClient();
   const saveFn = useServerFn(updateMyProfile);
   const [tags, setTags] = useState<string[]>([]);
