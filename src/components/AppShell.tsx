@@ -1,9 +1,10 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Home, Compass, Bell, User, Plus, LogOut, Flame } from "lucide-react";
+import { Home, Compass, Bell, User, Plus, LogOut, Flame, Shield } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { getMyProfile, getUnreadCount } from "@/lib/api.functions";
+import { amIAdmin } from "@/lib/admin.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
@@ -29,11 +30,17 @@ export function AppShell({
   const [composerOpen, setComposerOpen] = useState(false);
   const meFn = useServerFn(getMyProfile);
   const unreadFn = useServerFn(getUnreadCount);
+  const adminFn = useServerFn(amIAdmin);
   const { data: me } = useQuery({ queryKey: ["me"], queryFn: () => meFn() });
   const { data: unread } = useQuery({
     queryKey: ["unread"],
     queryFn: () => unreadFn(),
     refetchInterval: 30_000,
+  });
+  const { data: adminInfo } = useQuery({
+    queryKey: ["me", "admin"],
+    queryFn: () => adminFn(),
+    staleTime: 5 * 60_000,
   });
 
   async function signOut() {
@@ -93,6 +100,15 @@ export function AppShell({
         >
           Connect to ChatGPT / Claude →
         </Link>
+        {adminInfo?.admin ? (
+          <Link
+            to="/admin"
+            className="mb-2 flex items-center gap-2 rounded-md px-3 py-2 text-xs text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
+          >
+            <Shield className="h-3.5 w-3.5" />
+            Admin
+          </Link>
+        ) : null}
         <div className="flex items-center gap-2 rounded-md border border-border/70 p-2">
           <UserAvatar url={me?.avatar_url} name={me?.display_name} size={32} />
           <div className="min-w-0 flex-1">
