@@ -30,9 +30,11 @@ import { Route as AuthenticatedSShipIdRouteImport } from './routes/_authenticate
 import { Route as AdminAdminUsersRouteImport } from './routes/_admin/admin.users'
 import { Route as AdminAdminShipsRouteImport } from './routes/_admin/admin.ships'
 import { Route as AdminAdminReportsRouteImport } from './routes/_admin/admin.reports'
+import { Route as AdminAdminAutopostRouteImport } from './routes/_admin/admin.autopost'
 import { Route as AdminAdminActivityRouteImport } from './routes/_admin/admin.activity'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
+import { Route as ApiPublicHooksAutopostRouteImport } from './routes/api/public/hooks/autopost'
 import { Route as AdminAdminUsersIdRouteImport } from './routes/_admin/admin.users.$id'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -142,6 +144,11 @@ const AdminAdminReportsRoute = AdminAdminReportsRouteImport.update({
   path: '/admin/reports',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminAdminAutopostRoute = AdminAdminAutopostRouteImport.update({
+  id: '/admin/autopost',
+  path: '/admin/autopost',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const AdminAdminActivityRoute = AdminAdminActivityRouteImport.update({
   id: '/admin/activity',
   path: '/admin/activity',
@@ -156,6 +163,11 @@ const Char91DotmcpChar93InvokeToolToolRoute =
 const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
   id: '/.lovable/oauth/consent',
   path: '/.lovable/oauth/consent',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicHooksAutopostRoute = ApiPublicHooksAutopostRouteImport.update({
+  id: '/api/public/hooks/autopost',
+  path: '/api/public/hooks/autopost',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminAdminUsersIdRoute = AdminAdminUsersIdRouteImport.update({
@@ -181,6 +193,7 @@ export interface FileRoutesByFullPath {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/admin/activity': typeof AdminAdminActivityRoute
+  '/admin/autopost': typeof AdminAdminAutopostRoute
   '/admin/reports': typeof AdminAdminReportsRoute
   '/admin/ships': typeof AdminAdminShipsRoute
   '/admin/users': typeof AdminAdminUsersRouteWithChildren
@@ -188,6 +201,7 @@ export interface FileRoutesByFullPath {
   '/u/$username': typeof AuthenticatedUUsernameRoute
   '/admin/': typeof AdminAdminIndexRoute
   '/admin/users/$id': typeof AdminAdminUsersIdRoute
+  '/api/public/hooks/autopost': typeof ApiPublicHooksAutopostRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -206,6 +220,7 @@ export interface FileRoutesByTo {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/admin/activity': typeof AdminAdminActivityRoute
+  '/admin/autopost': typeof AdminAdminAutopostRoute
   '/admin/reports': typeof AdminAdminReportsRoute
   '/admin/ships': typeof AdminAdminShipsRoute
   '/admin/users': typeof AdminAdminUsersRouteWithChildren
@@ -213,6 +228,7 @@ export interface FileRoutesByTo {
   '/u/$username': typeof AuthenticatedUUsernameRoute
   '/admin': typeof AdminAdminIndexRoute
   '/admin/users/$id': typeof AdminAdminUsersIdRoute
+  '/api/public/hooks/autopost': typeof ApiPublicHooksAutopostRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -234,6 +250,7 @@ export interface FileRoutesById {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/_admin/admin/activity': typeof AdminAdminActivityRoute
+  '/_admin/admin/autopost': typeof AdminAdminAutopostRoute
   '/_admin/admin/reports': typeof AdminAdminReportsRoute
   '/_admin/admin/ships': typeof AdminAdminShipsRoute
   '/_admin/admin/users': typeof AdminAdminUsersRouteWithChildren
@@ -241,6 +258,7 @@ export interface FileRoutesById {
   '/_authenticated/u/$username': typeof AuthenticatedUUsernameRoute
   '/_admin/admin/': typeof AdminAdminIndexRoute
   '/_admin/admin/users/$id': typeof AdminAdminUsersIdRoute
+  '/api/public/hooks/autopost': typeof ApiPublicHooksAutopostRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -261,6 +279,7 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/admin/activity'
+    | '/admin/autopost'
     | '/admin/reports'
     | '/admin/ships'
     | '/admin/users'
@@ -268,6 +287,7 @@ export interface FileRouteTypes {
     | '/u/$username'
     | '/admin/'
     | '/admin/users/$id'
+    | '/api/public/hooks/autopost'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -286,6 +306,7 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/admin/activity'
+    | '/admin/autopost'
     | '/admin/reports'
     | '/admin/ships'
     | '/admin/users'
@@ -293,6 +314,7 @@ export interface FileRouteTypes {
     | '/u/$username'
     | '/admin'
     | '/admin/users/$id'
+    | '/api/public/hooks/autopost'
   id:
     | '__root__'
     | '/'
@@ -313,6 +335,7 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/_admin/admin/activity'
+    | '/_admin/admin/autopost'
     | '/_admin/admin/reports'
     | '/_admin/admin/ships'
     | '/_admin/admin/users'
@@ -320,6 +343,7 @@ export interface FileRouteTypes {
     | '/_authenticated/u/$username'
     | '/_admin/admin/'
     | '/_admin/admin/users/$id'
+    | '/api/public/hooks/autopost'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -335,6 +359,7 @@ export interface RootRouteChildren {
   BlogBuildingInPublicWithAiRoute: typeof BlogBuildingInPublicWithAiRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
+  ApiPublicHooksAutopostRoute: typeof ApiPublicHooksAutopostRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -486,6 +511,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAdminReportsRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/_admin/admin/autopost': {
+      id: '/_admin/admin/autopost'
+      path: '/admin/autopost'
+      fullPath: '/admin/autopost'
+      preLoaderRoute: typeof AdminAdminAutopostRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/_admin/admin/activity': {
       id: '/_admin/admin/activity'
       path: '/admin/activity'
@@ -505,6 +537,13 @@ declare module '@tanstack/react-router' {
       path: '/.lovable/oauth/consent'
       fullPath: '/.lovable/oauth/consent'
       preLoaderRoute: typeof DotlovableOauthConsentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/autopost': {
+      id: '/api/public/hooks/autopost'
+      path: '/api/public/hooks/autopost'
+      fullPath: '/api/public/hooks/autopost'
+      preLoaderRoute: typeof ApiPublicHooksAutopostRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_admin/admin/users/$id': {
@@ -531,6 +570,7 @@ const AdminAdminUsersRouteWithChildren = AdminAdminUsersRoute._addFileChildren(
 
 interface AdminRouteRouteChildren {
   AdminAdminActivityRoute: typeof AdminAdminActivityRoute
+  AdminAdminAutopostRoute: typeof AdminAdminAutopostRoute
   AdminAdminReportsRoute: typeof AdminAdminReportsRoute
   AdminAdminShipsRoute: typeof AdminAdminShipsRoute
   AdminAdminUsersRoute: typeof AdminAdminUsersRouteWithChildren
@@ -539,6 +579,7 @@ interface AdminRouteRouteChildren {
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminAdminActivityRoute: AdminAdminActivityRoute,
+  AdminAdminAutopostRoute: AdminAdminAutopostRoute,
   AdminAdminReportsRoute: AdminAdminReportsRoute,
   AdminAdminShipsRoute: AdminAdminShipsRoute,
   AdminAdminUsersRoute: AdminAdminUsersRouteWithChildren,
@@ -586,6 +627,7 @@ const rootRouteChildren: RootRouteChildren = {
   BlogBuildingInPublicWithAiRoute: BlogBuildingInPublicWithAiRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
+  ApiPublicHooksAutopostRoute: ApiPublicHooksAutopostRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
