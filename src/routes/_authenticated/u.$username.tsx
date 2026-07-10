@@ -1,13 +1,16 @@
-import { createFileRoute, useParams } from "@tanstack/react-router";
+import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Flame, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { RightRail } from "@/components/RightRail";
 import { ShipCard } from "@/components/ShipCard";
 import { UserAvatar } from "@/components/UserAvatar";
 import { Button } from "@/components/ui/button";
-import { getProfileByUsername, toggleFollow } from "@/lib/api.functions";
+import { TagInput } from "@/components/TagInput";
+import { getProfileByUsername, toggleFollow, updateMyProfile } from "@/lib/api.functions";
 
 export const Route = createFileRoute("/_authenticated/u/$username")({
   component: ProfilePage,
@@ -75,6 +78,11 @@ function ProfilePage() {
                 {data.profile.bio ? (
                   <p className="mt-2 text-sm text-foreground">{data.profile.bio}</p>
                 ) : null}
+                <FocusTagsSection
+                  isMe={data.is_me}
+                  tags={(data.profile.focus_tags ?? []) as string[]}
+                  onSaved={() => qc.invalidateQueries({ queryKey: ["profile", username] })}
+                />
                 <div className="mt-3 flex items-center gap-4 text-sm">
                   <span className="inline-flex items-center gap-1">
                     <Flame className={`h-4 w-4 ${data.profile.streak_count ? "text-primary" : "text-muted-foreground"}`} />
