@@ -26,6 +26,7 @@ export type FeedShip = {
   image_signed_url: string | null;
   parent_ship_id: string | null;
   post_type: "ship" | "ask" | "feedback" | "discussion";
+  topic_tags: string[];
   created_at: string;
   author: {
     id: string;
@@ -39,6 +40,25 @@ export type FeedShip = {
   liked_by_me: boolean;
   reshipped_by_me: boolean;
 };
+
+// Normalize a tag: lowercase, trim, non-alnum → dash, collapse dashes, max 24.
+export function normalizeTag(input: string): string {
+  return input
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 24);
+}
+const tagArray = (max: number) =>
+  z
+    .array(z.string())
+    .max(max)
+    .transform((arr) =>
+      Array.from(
+        new Set(arr.map(normalizeTag).filter((t) => t.length >= 2)),
+      ).slice(0, max),
+    );
 
 async function decorateShips(
   supabase: any,
@@ -96,6 +116,7 @@ async function decorateShips(
     image_signed_url: r.image_url ? signedMap[r.image_url] ?? null : null,
     parent_ship_id: r.parent_ship_id,
     post_type: (r.post_type ?? "ship") as FeedShip["post_type"],
+    topic_tags: (r.topic_tags ?? []) as string[],
     created_at: r.created_at,
     author: authors[r.author_id] ?? { id: r.author_id, username: null, display_name: null, avatar_url: null },
     like_count: likeMap[r.id] ?? 0,
@@ -130,6 +151,7 @@ export const updateMyProfile = createServerFn({ method: "POST" })
         bio: z.string().max(280).nullable().optional(),
         building_now: z.string().max(120).nullable().optional(),
         avatar_url: z.string().url().nullable().optional(),
+        focus_tags: tagArray(5).optional(),
       })
       .parse(d),
   )
@@ -190,9 +212,10 @@ export const getFeed = createServerFn({ method: "GET" })
   .inputValidator((d) =>
     z
       .object({
-        tab: z.enum(["following", "for_you"]),
+        tab: z.enum(["following", "for_you", "relevant"]),
         cursor: z.string().nullable().optional(),
         limit: z.number().min(1).max(50).optional(),
+        tag: z.string().nullable().optional(),
       })
       .parse(d),
   )
@@ -214,6 +237,22 @@ export const getFeed = createServerFn({ method: "GET" })
       ids.push(context.userId);
       query = query.in("author_id", ids);
     }
+    if (data.tab === "relevant" && !data.tag) {
+      const { data: me } = await context.supabase
+        .from("profiles")
+        .select("focus_tags")
+        .eq("id", context.userId)
+        .maybeSingle();
+      const focus = (me?.focus_tags ?? []) as string[];
+      if (focus.length === 0) {
+        return { items: [], nextCursor: null, needsFocus: true };
+      }
+      query = query.overlaps("topic_tags", focus);
+    }
+    if (data.tag) {
+      const t = normalizeTag(data.tag);
+      if (t) query = query.contains("topic_tags", [t]);
+    }
     const { data: rows, error } = await query;
     if (error) throw error;
     const hasMore = (rows?.length ?? 0) > limit;
@@ -222,6 +261,7 @@ export const getFeed = createServerFn({ method: "GET" })
     return {
       items,
       nextCursor: hasMore ? slice[slice.length - 1].created_at : null,
+      needsFocus: false,
     };
   });
 
@@ -259,6 +299,7 @@ export const createShip = createServerFn({ method: "POST" })
         image_url: z.string().nullable().optional(),
         parent_ship_id: z.string().uuid().nullable().optional(),
         post_type: z.enum(["ship", "ask", "feedback", "discussion"]).optional(),
+        topic_tags: tagArray(3).optional(),
       })
       .parse(d),
   )
@@ -273,6 +314,7 @@ export const createShip = createServerFn({ method: "POST" })
         image_url: data.image_url ?? null,
         parent_ship_id: data.parent_ship_id ?? null,
         post_type: data.post_type ?? "ship",
+        topic_tags: data.topic_tags ?? [],
       })
       .select()
       .single();
@@ -411,4 +453,33 @@ export const getRightRail = createServerFn({ method: "GET" })
       .map(([tag, count]) => ({ tag, count }));
 
     return { me: meRes.data, suggestions, trending };
+  });
+
+// ============= Topic tag suggestions (for composer autocomplete) =============
+export const getTagSuggestions = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) =>
+    z.object({ q: z.string().optional() }).parse(d ?? {}),
+  )
+  .handler(async ({ context, data }) => {
+    // Pull recent ships and count topic tag frequencies.
+    const { data: rows } = await context.supabase
+      .from("ships")
+      .select("topic_tags")
+      .not("topic_tags", "eq", "{}")
+      .order("created_at", { ascending: false })
+      .limit(500);
+    const counts: Record<string, number> = {};
+    (rows ?? []).forEach((r: any) => {
+      (r.topic_tags ?? []).forEach((t: string) => {
+        counts[t] = (counts[t] ?? 0) + 1;
+      });
+    });
+    const q = (data.q ?? "").toLowerCase().trim();
+    const items = Object.entries(counts)
+      .filter(([tag]) => (q ? tag.includes(q) : true))
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 12)
+      .map(([tag, count]) => ({ tag, count }));
+    return { items };
   });

@@ -1,16 +1,26 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Loader2 } from "lucide-react";
+import { Loader2, X } from "lucide-react";
+import { zodValidator, fallback } from "@tanstack/zod-adapter";
+import { z } from "zod";
+import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { RightRail } from "@/components/RightRail";
 import { Composer } from "@/components/Composer";
 import { ShipCard } from "@/components/ShipCard";
-import { getFeed, getMyProfile } from "@/lib/api.functions";
+import { TagInput } from "@/components/TagInput";
+import { getFeed, getMyProfile, updateMyProfile } from "@/lib/api.functions";
+
+const searchSchema = z.object({
+  tab: fallback(z.enum(["following", "for_you", "relevant"]), "for_you").default("for_you"),
+  tag: fallback(z.string(), "").default(""),
+});
 
 export const Route = createFileRoute("/_authenticated/home")({
   component: HomePage,
+  validateSearch: zodValidator(searchSchema),
   head: () => ({
     meta: [
       { title: "Home feed — ShippedIn" },
@@ -26,7 +36,9 @@ export const Route = createFileRoute("/_authenticated/home")({
 
 function HomePage() {
   const navigate = useNavigate();
-  const [tab, setTab] = useState<"following" | "for_you">("for_you");
+  const { tab, tag } = Route.useSearch();
+  const activeTag = tag.trim();
+  const activeTab = activeTag ? "for_you" : tab;
   const meFn = useServerFn(getMyProfile);
   const feedFn = useServerFn(getFeed);
   const { data: me } = useQuery({ queryKey: ["me"], queryFn: () => meFn() });
@@ -36,36 +48,57 @@ function HomePage() {
   }, [me, navigate]);
 
   const feed = useInfiniteQuery({
-    queryKey: ["feed", tab],
+    queryKey: ["feed", activeTab, activeTag],
     queryFn: ({ pageParam }) =>
-      feedFn({ data: { tab, cursor: pageParam as string | null } }),
+      feedFn({
+        data: {
+          tab: activeTab,
+          cursor: pageParam as string | null,
+          tag: activeTag || null,
+        },
+      }),
     initialPageParam: null as string | null,
     getNextPageParam: (last) => last.nextCursor,
     enabled: !!me?.username,
   });
 
   const items = feed.data?.pages.flatMap((p) => p.items) ?? [];
+  const needsFocus = feed.data?.pages[0]?.needsFocus ?? false;
 
   return (
     <AppShell right={<RightRail />}>
       <div className="border-b border-border/70">
         <div className="flex">
-          {(["following", "for_you"] as const).map((t) => (
+          {(["following", "for_you", "relevant"] as const).map((t) => (
             <button
               key={t}
-              onClick={() => setTab(t)}
+              onClick={() => navigate({ to: "/home", search: { tab: t, tag: "" } })}
               className={`relative flex-1 py-3.5 text-sm font-medium transition-colors ${
-                tab === t ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+                !activeTag && tab === t ? "text-foreground" : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              {t === "following" ? "Following" : "For You"}
-              {tab === t ? (
+              {t === "following" ? "Following" : t === "for_you" ? "For You" : "Relevant"}
+              {!activeTag && tab === t ? (
                 <span className="absolute inset-x-0 bottom-0 mx-auto h-0.5 w-16 rounded-full bg-primary" />
               ) : null}
             </button>
           ))}
         </div>
       </div>
+
+      {activeTag ? (
+        <div className="flex items-center justify-between border-b border-border/70 bg-secondary/30 px-4 py-2">
+          <span className="font-mono text-sm text-foreground">
+            filtering by <span className="text-primary">#{activeTag}</span>
+          </span>
+          <button
+            onClick={() => navigate({ to: "/home", search: { tab, tag: "" } })}
+            className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-mono text-xs text-muted-foreground hover:bg-secondary hover:text-foreground"
+          >
+            <X className="h-3 w-3" /> clear
+          </button>
+        </div>
+      ) : null}
 
       {me?.username ? (
         <div className="border-b border-border/70">
@@ -77,8 +110,10 @@ function HomePage() {
         <div className="flex items-center justify-center p-10 text-muted-foreground">
           <Loader2 className="h-5 w-5 animate-spin" />
         </div>
+      ) : needsFocus ? (
+        <FocusPrompt />
       ) : items.length === 0 ? (
-        <EmptyState tab={tab} />
+        <EmptyState tab={activeTab} tag={activeTag} />
       ) : (
         <>
           {items.map((s) => (
@@ -105,14 +140,60 @@ function HomePage() {
   );
 }
 
-function EmptyState({ tab }: { tab: "following" | "for_you" }) {
+function EmptyState({ tab, tag }: { tab: "following" | "for_you" | "relevant"; tag: string }) {
   return (
     <div className="p-10 text-center">
       <p className="text-sm text-muted-foreground">
-        {tab === "following"
+        {tag
+          ? `No ships tagged #${tag} yet.`
+          : tab === "following"
           ? "Follow some builders and their ships show up here."
+          : tab === "relevant"
+          ? "No recent ships match your focus tags. Try broader tags or check back later."
           : "No ships yet. Be the first to post!"}
       </p>
+    </div>
+  );
+}
+
+function FocusPrompt() {
+  const qc = useQueryClient();
+  const saveFn = useServerFn(updateMyProfile);
+  const [tags, setTags] = useState<string[]>([]);
+  const save = useMutation({
+    mutationFn: async () => saveFn({ data: { focus_tags: tags } }),
+    onSuccess: () => {
+      toast.success("Focus updated");
+      qc.invalidateQueries();
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Failed"),
+  });
+  return (
+    <div className="p-6">
+      <div className="rounded-xl border border-border bg-card p-5">
+        <h2 className="text-base font-semibold text-foreground">
+          Tell us what you're working on
+        </h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Add up to 5 tags for what you're building or stuck on. We'll surface ships from
+          other builders who touched the same problems.
+        </p>
+        <div className="mt-3">
+          <TagInput
+            value={tags}
+            onChange={setTags}
+            max={5}
+            placeholder="auth, stripe-payments, onboarding…"
+          />
+        </div>
+        <button
+          disabled={tags.length === 0 || save.isPending}
+          onClick={() => save.mutate()}
+          className="mt-3 rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground disabled:opacity-50"
+        >
+          {save.isPending ? "Saving…" : "Save focus tags"}
+        </button>
+      </div>
     </div>
   );
 }

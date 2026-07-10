@@ -182,6 +182,22 @@ export function ShipCard({
             ) : null}
           </Link>
 
+          {ship.topic_tags && ship.topic_tags.length > 0 ? (
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {ship.topic_tags.map((t) => (
+                <Link
+                  key={t}
+                  to="/home"
+                  search={{ tag: t }}
+                  onClick={(e) => e.stopPropagation()}
+                  className="rounded-full bg-primary/10 px-2 py-0.5 font-mono text-[11px] text-primary hover:bg-primary/20"
+                >
+                  #{t}
+                </Link>
+              ))}
+            </div>
+          ) : null}
+
           {!compact ? (
             <div className="mt-3 flex items-center gap-6 text-muted-foreground">
               <button

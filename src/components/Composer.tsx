@@ -17,6 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { createShip } from "@/lib/api.functions";
 import { TOOL_TAGS } from "@/lib/format";
 import { UserAvatar } from "./UserAvatar";
+import { TagInput } from "./TagInput";
 
 const NONE = "__none__";
 
@@ -58,6 +59,7 @@ export function Composer({
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [postType, setPostType] = useState<PostType>("ship");
+  const [topicTags, setTopicTags] = useState<string[]>([]);
 
   const m = useMutation({
     mutationFn: async () =>
@@ -69,6 +71,7 @@ export function Composer({
           image_url: imagePath,
           parent_ship_id: parentShipId,
           post_type: parentShipId ? undefined : postType,
+          topic_tags: parentShipId ? undefined : topicTags,
         },
       }),
     onSuccess: () => {
@@ -78,6 +81,7 @@ export function Composer({
       setImagePath(null);
       setImagePreview(null);
       setPostType("ship");
+      setTopicTags([]);
       qc.invalidateQueries();
       toast.success(parentShipId ? "Reply posted" : "Posted!");
       onDone?.();
@@ -159,6 +163,17 @@ export function Composer({
             className="h-8 font-mono text-xs"
           />
         </div>
+
+        {!parentShipId ? (
+          <div className="mt-2">
+            <TagInput
+              value={topicTags}
+              onChange={setTopicTags}
+              max={3}
+              placeholder="topics (optional) — e.g. auth, stripe-payments"
+            />
+          </div>
+        ) : null}
 
         {imagePreview ? (
           <div className="relative mt-2 overflow-hidden rounded-lg border border-border">

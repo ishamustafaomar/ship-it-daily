@@ -1,13 +1,16 @@
-import { createFileRoute, useParams } from "@tanstack/react-router";
+import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Flame, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { RightRail } from "@/components/RightRail";
 import { ShipCard } from "@/components/ShipCard";
 import { UserAvatar } from "@/components/UserAvatar";
 import { Button } from "@/components/ui/button";
-import { getProfileByUsername, toggleFollow } from "@/lib/api.functions";
+import { TagInput } from "@/components/TagInput";
+import { getProfileByUsername, toggleFollow, updateMyProfile } from "@/lib/api.functions";
 
 export const Route = createFileRoute("/_authenticated/u/$username")({
   component: ProfilePage,
@@ -75,6 +78,11 @@ function ProfilePage() {
                 {data.profile.bio ? (
                   <p className="mt-2 text-sm text-foreground">{data.profile.bio}</p>
                 ) : null}
+                <FocusTagsSection
+                  isMe={data.is_me}
+                  tags={(data.profile.focus_tags ?? []) as string[]}
+                  onSaved={() => qc.invalidateQueries({ queryKey: ["profile", username] })}
+                />
                 <div className="mt-3 flex items-center gap-4 text-sm">
                   <span className="inline-flex items-center gap-1">
                     <Flame className={`h-4 w-4 ${data.profile.streak_count ? "text-primary" : "text-muted-foreground"}`} />
@@ -113,5 +121,82 @@ function ProfilePage() {
         </>
       )}
     </AppShell>
+  );
+}
+
+function FocusTagsSection({
+  isMe,
+  tags,
+  onSaved,
+}: {
+  isMe: boolean;
+  tags: string[];
+  onSaved: () => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState<string[]>(tags);
+  const saveFn = useServerFn(updateMyProfile);
+  useEffect(() => setDraft(tags), [tags]);
+  const save = useMutation({
+    mutationFn: async () => saveFn({ data: { focus_tags: draft } }),
+    onSuccess: () => {
+      toast.success("Focus updated");
+      setEditing(false);
+      onSaved();
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Failed"),
+  });
+
+  if (!isMe && tags.length === 0) return null;
+
+  return (
+    <div className="mt-3">
+      {editing ? (
+        <div className="space-y-2">
+          <TagInput value={draft} onChange={setDraft} max={5} placeholder="focus tags" />
+          <div className="flex gap-2">
+            <Button size="sm" onClick={() => save.mutate()} disabled={save.isPending}>
+              Save
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => {
+                setDraft(tags);
+                setEditing(false);
+              }}
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="font-mono text-[11px] text-muted-foreground">focus:</span>
+          {tags.length === 0 ? (
+            <span className="font-mono text-[11px] text-muted-foreground">none yet</span>
+          ) : (
+            tags.map((t) => (
+              <Link
+                key={t}
+                to="/home"
+                search={{ tag: t }}
+                className="rounded-full bg-primary/10 px-2 py-0.5 font-mono text-[11px] text-primary hover:bg-primary/20"
+              >
+                #{t}
+              </Link>
+            ))
+          )}
+          {isMe ? (
+            <button
+              onClick={() => setEditing(true)}
+              className="ml-1 font-mono text-[11px] text-muted-foreground hover:text-foreground underline"
+            >
+              edit
+            </button>
+          ) : null}
+        </div>
+      )}
+    </div>
   );
 }

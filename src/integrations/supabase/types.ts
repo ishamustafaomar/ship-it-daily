@@ -145,6 +145,7 @@ export type Database = {
           building_now: string | null
           created_at: string
           display_name: string | null
+          focus_tags: string[]
           id: string
           last_ship_date: string | null
           longest_streak: number
@@ -157,6 +158,7 @@ export type Database = {
           building_now?: string | null
           created_at?: string
           display_name?: string | null
+          focus_tags?: string[]
           id: string
           last_ship_date?: string | null
           longest_streak?: number
@@ -169,6 +171,7 @@ export type Database = {
           building_now?: string | null
           created_at?: string
           display_name?: string | null
+          focus_tags?: string[]
           id?: string
           last_ship_date?: string | null
           longest_streak?: number
@@ -224,6 +227,7 @@ export type Database = {
           parent_ship_id: string | null
           post_type: string
           tool_tag: string | null
+          topic_tags: string[]
         }
         Insert: {
           author_id: string
@@ -235,6 +239,7 @@ export type Database = {
           parent_ship_id?: string | null
           post_type?: string
           tool_tag?: string | null
+          topic_tags?: string[]
         }
         Update: {
           author_id?: string
@@ -246,6 +251,7 @@ export type Database = {
           parent_ship_id?: string | null
           post_type?: string
           tool_tag?: string | null
+          topic_tags?: string[]
         }
         Relationships: [
           {
