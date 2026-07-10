@@ -386,6 +386,35 @@ export const toggleReship = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+// ============= Toggle emoji reaction =============
+export const toggleReaction = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) =>
+    z
+      .object({
+        shipId: z.string().uuid(),
+        emoji: z.enum(["🔥", "🚀", "👏", "💡", "🎉"]),
+        active: z.boolean(),
+      })
+      .parse(d),
+  )
+  .handler(async ({ context, data }) => {
+    if (data.active) {
+      await context.supabase
+        .from("reactions")
+        .insert({ ship_id: data.shipId, user_id: context.userId, emoji: data.emoji })
+        .select();
+    } else {
+      await context.supabase
+        .from("reactions")
+        .delete()
+        .eq("ship_id", data.shipId)
+        .eq("user_id", context.userId)
+        .eq("emoji", data.emoji);
+    }
+    return { ok: true };
+  });
+
 // ============= Follow / unfollow =============
 export const toggleFollow = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
