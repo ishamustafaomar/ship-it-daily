@@ -28,6 +28,7 @@ import { Route as AdminAdminIndexRouteImport } from './routes/_admin/admin.index
 import { Route as AuthenticatedUUsernameRouteImport } from './routes/_authenticated/u.$username'
 import { Route as AuthenticatedSShipIdRouteImport } from './routes/_authenticated/s.$shipId'
 import { Route as AdminAdminUsersRouteImport } from './routes/_admin/admin.users'
+import { Route as AdminAdminShipsRouteImport } from './routes/_admin/admin.ships'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as AdminAdminUsersIdRouteImport } from './routes/_admin/admin.users.$id'
@@ -129,6 +130,11 @@ const AdminAdminUsersRoute = AdminAdminUsersRouteImport.update({
   path: '/admin/users',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminAdminShipsRoute = AdminAdminShipsRouteImport.update({
+  id: '/admin/ships',
+  path: '/admin/ships',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const Char91DotmcpChar93InvokeToolToolRoute =
   Char91DotmcpChar93InvokeToolToolRouteImport.update({
     id: '/.mcp/invoke-tool/$tool',
@@ -162,6 +168,7 @@ export interface FileRoutesByFullPath {
   '/blog/building-in-public-with-ai': typeof BlogBuildingInPublicWithAiRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/admin/ships': typeof AdminAdminShipsRoute
   '/admin/users': typeof AdminAdminUsersRouteWithChildren
   '/s/$shipId': typeof AuthenticatedSShipIdRoute
   '/u/$username': typeof AuthenticatedUUsernameRoute
@@ -184,6 +191,7 @@ export interface FileRoutesByTo {
   '/blog/building-in-public-with-ai': typeof BlogBuildingInPublicWithAiRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/admin/ships': typeof AdminAdminShipsRoute
   '/admin/users': typeof AdminAdminUsersRouteWithChildren
   '/s/$shipId': typeof AuthenticatedSShipIdRoute
   '/u/$username': typeof AuthenticatedUUsernameRoute
@@ -209,6 +217,7 @@ export interface FileRoutesById {
   '/blog/building-in-public-with-ai': typeof BlogBuildingInPublicWithAiRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/_admin/admin/ships': typeof AdminAdminShipsRoute
   '/_admin/admin/users': typeof AdminAdminUsersRouteWithChildren
   '/_authenticated/s/$shipId': typeof AuthenticatedSShipIdRoute
   '/_authenticated/u/$username': typeof AuthenticatedUUsernameRoute
@@ -233,6 +242,7 @@ export interface FileRouteTypes {
     | '/blog/building-in-public-with-ai'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
+    | '/admin/ships'
     | '/admin/users'
     | '/s/$shipId'
     | '/u/$username'
@@ -255,6 +265,7 @@ export interface FileRouteTypes {
     | '/blog/building-in-public-with-ai'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
+    | '/admin/ships'
     | '/admin/users'
     | '/s/$shipId'
     | '/u/$username'
@@ -279,6 +290,7 @@ export interface FileRouteTypes {
     | '/blog/building-in-public-with-ai'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
+    | '/_admin/admin/ships'
     | '/_admin/admin/users'
     | '/_authenticated/s/$shipId'
     | '/_authenticated/u/$username'
@@ -436,6 +448,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAdminUsersRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/_admin/admin/ships': {
+      id: '/_admin/admin/ships'
+      path: '/admin/ships'
+      fullPath: '/admin/ships'
+      preLoaderRoute: typeof AdminAdminShipsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/.mcp/invoke-tool/$tool': {
       id: '/.mcp/invoke-tool/$tool'
       path: '/.mcp/invoke-tool/$tool'
@@ -473,11 +492,13 @@ const AdminAdminUsersRouteWithChildren = AdminAdminUsersRoute._addFileChildren(
 )
 
 interface AdminRouteRouteChildren {
+  AdminAdminShipsRoute: typeof AdminAdminShipsRoute
   AdminAdminUsersRoute: typeof AdminAdminUsersRouteWithChildren
   AdminAdminIndexRoute: typeof AdminAdminIndexRoute
 }
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
+  AdminAdminShipsRoute: AdminAdminShipsRoute,
   AdminAdminUsersRoute: AdminAdminUsersRouteWithChildren,
   AdminAdminIndexRoute: AdminAdminIndexRoute,
 }
