@@ -6,6 +6,17 @@ import { createFileRoute } from "@tanstack/react-router";
 export const Route = createFileRoute("/api/public/hooks/autopost")({
   server: {
     handlers: {
+      GET: async () => {
+        return json(
+          {
+            ok: true,
+            endpoint: "autopost",
+            method: "POST",
+            note: "This is a cron-only endpoint. Send POST with Authorization: Bearer <CRON_SECRET>.",
+          },
+          200,
+        );
+      },
       POST: async ({ request }) => {
         try {
           const expected = process.env.CRON_SECRET;
