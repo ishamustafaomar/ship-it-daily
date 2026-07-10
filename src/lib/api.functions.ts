@@ -151,6 +151,7 @@ export const updateMyProfile = createServerFn({ method: "POST" })
         bio: z.string().max(280).nullable().optional(),
         building_now: z.string().max(120).nullable().optional(),
         avatar_url: z.string().url().nullable().optional(),
+        focus_tags: tagArray(5).optional(),
       })
       .parse(d),
   )
