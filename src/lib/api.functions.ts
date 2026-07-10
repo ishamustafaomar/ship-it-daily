@@ -216,6 +216,7 @@ export const getFeed = createServerFn({ method: "GET" })
         cursor: z.string().nullable().optional(),
         limit: z.number().min(1).max(50).optional(),
         tag: z.string().nullable().optional(),
+        tool: z.string().nullable().optional(),
       })
       .parse(d),
   )
@@ -252,6 +253,9 @@ export const getFeed = createServerFn({ method: "GET" })
     if (data.tag) {
       const t = normalizeTag(data.tag);
       if (t) query = query.contains("topic_tags", [t]);
+    }
+    if (data.tool) {
+      query = query.eq("tool_tag", data.tool);
     }
     const { data: rows, error } = await query;
     if (error) throw error;

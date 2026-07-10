@@ -16,6 +16,7 @@ import { getFeed, getMyProfile, updateMyProfile } from "@/lib/api.functions";
 const searchSchema = z.object({
   tab: fallback(z.enum(["following", "for_you", "relevant"]), "for_you").default("for_you"),
   tag: fallback(z.string(), "").default(""),
+  tool: fallback(z.string(), "").default(""),
 });
 
 export const Route = createFileRoute("/_authenticated/home")({
@@ -36,9 +37,10 @@ export const Route = createFileRoute("/_authenticated/home")({
 
 function HomePage() {
   const navigate = useNavigate();
-  const { tab, tag } = Route.useSearch();
+  const { tab, tag, tool } = Route.useSearch();
   const activeTag = tag.trim();
-  const activeTab = activeTag ? "for_you" : tab;
+  const activeTool = tool.trim();
+  const activeTab = activeTag || activeTool ? "for_you" : tab;
   const meFn = useServerFn(getMyProfile);
   const feedFn = useServerFn(getFeed);
   const { data: me } = useQuery({ queryKey: ["me"], queryFn: () => meFn() });
@@ -48,13 +50,14 @@ function HomePage() {
   }, [me, navigate]);
 
   const feed = useInfiniteQuery({
-    queryKey: ["feed", activeTab, activeTag],
+    queryKey: ["feed", activeTab, activeTag, activeTool],
     queryFn: ({ pageParam }) =>
       feedFn({
         data: {
           tab: activeTab,
           cursor: pageParam as string | null,
           tag: activeTag || null,
+          tool: activeTool || null,
         },
       }),
     initialPageParam: null as string | null,
@@ -72,13 +75,13 @@ function HomePage() {
           {(["following", "for_you", "relevant"] as const).map((t) => (
             <button
               key={t}
-              onClick={() => navigate({ to: "/home", search: { tab: t, tag: "" } })}
+              onClick={() => navigate({ to: "/home", search: { tab: t, tag: "", tool: "" } })}
               className={`relative flex-1 py-3.5 text-sm font-medium transition-colors ${
-                !activeTag && tab === t ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+                !activeTag && !activeTool && tab === t ? "text-foreground" : "text-muted-foreground hover:text-foreground"
               }`}
             >
               {t === "following" ? "Following" : t === "for_you" ? "For You" : "Relevant"}
-              {!activeTag && tab === t ? (
+              {!activeTag && !activeTool && tab === t ? (
                 <span className="absolute inset-x-0 bottom-0 mx-auto h-0.5 w-16 rounded-full bg-primary" />
               ) : null}
             </button>
@@ -86,13 +89,16 @@ function HomePage() {
         </div>
       </div>
 
-      {activeTag ? (
+      {activeTag || activeTool ? (
         <div className="flex items-center justify-between border-b border-border/70 bg-secondary/30 px-4 py-2">
           <span className="font-mono text-sm text-foreground">
-            filtering by <span className="text-primary">#{activeTag}</span>
+            filtering by{" "}
+            <span className="text-primary">
+              {activeTag ? `#${activeTag}` : `[ ${activeTool} ]`}
+            </span>
           </span>
           <button
-            onClick={() => navigate({ to: "/home", search: { tab, tag: "" } })}
+            onClick={() => navigate({ to: "/home", search: { tab, tag: "", tool: "" } })}
             className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-mono text-xs text-muted-foreground hover:bg-secondary hover:text-foreground"
           >
             <X className="h-3 w-3" /> clear
@@ -113,7 +119,11 @@ function HomePage() {
       ) : needsFocus ? (
         <FocusPrompt />
       ) : items.length === 0 ? (
-        <EmptyState tab={activeTab} tag={activeTag} />
+        activeTab === "following" && !activeTag && !activeTool ? (
+          <FollowingEmpty />
+        ) : (
+          <EmptyState tab={activeTab} tag={activeTag} tool={activeTool} />
+        )
       ) : (
         <>
           {items.map((s) => (
@@ -141,11 +151,22 @@ function HomePage() {
 }
 
 function EmptyState({ tab, tag }: { tab: "following" | "for_you" | "relevant"; tag: string }) {
+function EmptyState({
+  tab,
+  tag,
+  tool,
+}: {
+  tab: "following" | "for_you" | "relevant";
+  tag: string;
+  tool: string;
+}) {
   return (
     <div className="p-10 text-center">
       <p className="text-sm text-muted-foreground">
         {tag
           ? `No ships tagged #${tag} yet.`
+          : tool
+          ? `No ships built with [ ${tool} ] yet.`
           : tab === "following"
           ? "Follow some builders and their ships show up here."
           : tab === "relevant"
