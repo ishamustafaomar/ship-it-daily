@@ -185,6 +185,97 @@
           "$schema": "http://json-schema.org/draft-07/schema#"
         },
         "outputSchema": null
+      },
+      {
+        "name": "daily_ship",
+        "title": "Post today's ship (idempotent)",
+        "description": "Post the signed-in user's daily ship to ShippedIn to keep the streak going. Idempotent: if the user has already posted a top-level ship in the current UTC day, this returns the existing ship instead of creating a duplicate. Safe to call once per day on a schedule from an AI agent (e.g. ChatGPT/Claude scheduled tasks). Pass `force: true` to post an additional ship even if one exists today.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "body": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 560,
+              "description": "What you shipped today (max 560 chars)."
+            },
+            "post_type": {
+              "type": "string",
+              "enum": [
+                "ship",
+                "ask",
+                "feedback",
+                "discussion"
+              ],
+              "default": "ship"
+            },
+            "tool_tag": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 24
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Optional AI tool tag (e.g. 'Lovable', 'Cursor')."
+            },
+            "link_url": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uri"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Optional http(s) URL to link to."
+            },
+            "topic_tags": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 24
+              },
+              "maxItems": 3,
+              "description": "Up to 3 topic tags."
+            },
+            "force": {
+              "type": "boolean",
+              "default": false,
+              "description": "Post even if a ship already exists today."
+            }
+          },
+          "required": [
+            "body"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "has_shipped_today",
+        "title": "Check today's ship status",
+        "description": "Check whether the signed-in user has already posted a top-level ship in the current UTC day. Use this from a scheduled agent task before calling `daily_ship` to decide whether a post is needed.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
       }
     ]
   }
