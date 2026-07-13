@@ -28,7 +28,7 @@ const POST_TYPES: {
   placeholder: string;
   cta: string;
 }[] = [
-  { value: "ship", label: "Shipped", placeholder: "What did you ship today?", cta: "Ship" },
+  { value: "ship", label: "Shipped", placeholder: "What did you ship today? e.g. 'Added Stripe checkout with Cursor 💳'", cta: "Ship" },
   { value: "ask", label: "Ask", placeholder: "Stuck on something? Ask the community...", cta: "Ask" },
   { value: "feedback", label: "Feedback", placeholder: "Share what you built and ask for feedback...", cta: "Post" },
   { value: "discussion", label: "Discussion", placeholder: "Start a discussion...", cta: "Post" },
@@ -146,6 +146,7 @@ export function Composer({
 
         <Textarea
           autoFocus={autoFocus}
+          data-composer="true"
           value={body}
           onChange={(e) => setBody(e.target.value)}
           placeholder={effectivePlaceholder}
@@ -208,12 +209,18 @@ export function Composer({
           </Select>
 
           <button
+            type="button"
             onClick={() => fileInput.current?.click()}
-            className="rounded-md p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground"
-            aria-label="Attach image (optional)"
-            title="Attach image (optional)"
+            className="inline-flex items-center gap-1.5 rounded-md border border-border bg-secondary/40 px-2.5 py-1 text-xs font-medium text-foreground hover:bg-secondary"
+            aria-label="Add image"
+            title="Add a screenshot or image (optional)"
           >
-            {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImageIcon className="h-4 w-4" />}
+            {uploading ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <ImageIcon className="h-3.5 w-3.5" />
+            )}
+            <span>Add image</span>
           </button>
           <input
             ref={fileInput}
