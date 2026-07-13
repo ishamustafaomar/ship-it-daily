@@ -1,6 +1,22 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { createClient } from "@supabase/supabase-js";
+
+function createAnonSupabase() {
+  return createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_PUBLISHABLE_KEY!, {
+    global: {
+      fetch: (input, init) => {
+        const headers = new Headers(init?.headers);
+        headers.set("apikey", process.env.SUPABASE_PUBLISHABLE_KEY!);
+        headers.delete("Authorization");
+        return fetch(input as any, { ...init, headers });
+      },
+    },
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+}
+const ANON_UUID = "00000000-0000-0000-0000-000000000000";
 
 // Only allow http(s) links — blocks javascript:, data:, vbscript:, etc.
 const httpUrl = z
