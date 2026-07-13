@@ -246,6 +246,43 @@ export const getProfileByUsername = createServerFn({ method: "GET" })
     };
   });
 
+// ============= Public profile view (no auth) =============
+export const getPublicProfile = createServerFn({ method: "GET" })
+  .inputValidator((d) => z.object({ username: z.string() }).parse(d))
+  .handler(async ({ data }) => {
+    const supabase = createAnonSupabase();
+    const { data: profile, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .ilike("username", data.username)
+      .maybeSingle();
+    if (error) throw error;
+    if (!profile) return null;
+
+    const [{ count: followers }, { count: following }] = await Promise.all([
+      supabase.from("follows").select("id", { count: "exact", head: true }).eq("following_id", profile.id),
+      supabase.from("follows").select("id", { count: "exact", head: true }).eq("follower_id", profile.id),
+    ]);
+
+    const { data: shipsRows } = await supabase
+      .from("ships")
+      .select("*")
+      .eq("author_id", profile.id)
+      .is("parent_ship_id", null)
+      .order("created_at", { ascending: false })
+      .limit(50);
+    const ships = await decorateShips(supabase, ANON_UUID, shipsRows ?? []);
+
+    return {
+      profile,
+      followers: followers ?? 0,
+      following: following ?? 0,
+      is_following: false,
+      is_me: false,
+      ships,
+    };
+  });
+
 // ============= Feed =============
 export const getFeed = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
