@@ -10,6 +10,7 @@ import { AppShell } from "@/components/AppShell";
 import { RightRail } from "@/components/RightRail";
 import { Composer } from "@/components/Composer";
 import { ShipCard } from "@/components/ShipCard";
+import { ExampleShips } from "@/components/ExampleShips";
 import { TagInput } from "@/components/TagInput";
 import { UserAvatar } from "@/components/UserAvatar";
 import { Button } from "@/components/ui/button";
@@ -134,9 +135,16 @@ function HomePage() {
         <FocusPrompt />
       ) : items.length === 0 ? (
         activeTab === "following" && !activeTag && !activeTool ? (
-          <FollowingEmpty />
+          <>
+            <ExampleShips />
+            <FollowingEmpty />
+          </>
         ) : (
-          <EmptyState tab={activeTab} tag={activeTag} tool={activeTool} />
+          !activeTag && !activeTool ? (
+            <ExampleShips />
+          ) : (
+            <EmptyState tab={activeTab} tag={activeTag} tool={activeTool} />
+          )
         )
       ) : (
         <>
