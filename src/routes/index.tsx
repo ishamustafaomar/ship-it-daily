@@ -1,5 +1,7 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Flame, Rocket, Users } from "lucide-react";
+import { useEffect } from "react";
+import { useSession } from "@/hooks/use-session";
 
 export const Route = createFileRoute("/")({
   component: Landing,
@@ -16,6 +18,12 @@ export const Route = createFileRoute("/")({
 });
 
 function Landing() {
+  const { session, loading } = useSession();
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (!loading && session) navigate({ to: "/home", replace: true });
+  }, [session, loading, navigate]);
+  const signedIn = !!session;
   return (
     <div className="min-h-screen">
       <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
@@ -24,18 +32,29 @@ function Landing() {
           <span className="font-mono text-lg font-semibold tracking-tight">ShippedIn</span>
         </div>
         <div className="flex items-center gap-3">
-          <Link
-            to="/auth"
-            className="rounded-md px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground"
-          >
-            Sign in
-          </Link>
-          <Link
-            to="/auth"
-            className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-          >
-            Join
-          </Link>
+          {signedIn ? (
+            <Link
+              to="/home"
+              className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+            >
+              Open app
+            </Link>
+          ) : (
+            <>
+              <Link
+                to="/auth"
+                className="rounded-md px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground"
+              >
+                Sign in
+              </Link>
+              <Link
+                to="/auth"
+                className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+              >
+                Join
+              </Link>
+            </>
+          )}
         </div>
       </header>
 
@@ -55,10 +74,10 @@ function Landing() {
         </p>
         <div className="mt-8 flex justify-center gap-3">
           <Link
-            to="/auth"
+            to={signedIn ? "/home" : "/auth"}
             className="rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
           >
-            Start your streak
+            {signedIn ? "Open app" : "Start your streak"}
           </Link>
         </div>
 
