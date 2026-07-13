@@ -16,6 +16,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AdminRouteRouteImport } from './routes/_admin/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as UUsernameRouteImport } from './routes/u.$username'
 import { Route as BlogBuildingInPublicWithAiRouteImport } from './routes/blog.building-in-public-with-ai'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
@@ -25,7 +26,6 @@ import { Route as AuthenticatedExploreRouteImport } from './routes/_authenticate
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as AdminAdminIndexRouteImport } from './routes/_admin/admin.index'
-import { Route as AuthenticatedUUsernameRouteImport } from './routes/_authenticated/u.$username'
 import { Route as AuthenticatedSShipIdRouteImport } from './routes/_authenticated/s.$shipId'
 import { Route as AdminAdminUsersRouteImport } from './routes/_admin/admin.users'
 import { Route as AdminAdminShipsRouteImport } from './routes/_admin/admin.ships'
@@ -68,6 +68,11 @@ const AdminRouteRoute = AdminRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UUsernameRoute = UUsernameRouteImport.update({
+  id: '/u/$username',
+  path: '/u/$username',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BlogBuildingInPublicWithAiRoute =
@@ -118,11 +123,6 @@ const AdminAdminIndexRoute = AdminAdminIndexRouteImport.update({
   id: '/admin/',
   path: '/admin/',
   getParentRoute: () => AdminRouteRoute,
-} as any)
-const AuthenticatedUUsernameRoute = AuthenticatedUUsernameRouteImport.update({
-  id: '/u/$username',
-  path: '/u/$username',
-  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedSShipIdRoute = AuthenticatedSShipIdRouteImport.update({
   id: '/s/$shipId',
@@ -190,6 +190,7 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/blog/building-in-public-with-ai': typeof BlogBuildingInPublicWithAiRoute
+  '/u/$username': typeof UUsernameRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/admin/activity': typeof AdminAdminActivityRoute
@@ -198,7 +199,6 @@ export interface FileRoutesByFullPath {
   '/admin/ships': typeof AdminAdminShipsRoute
   '/admin/users': typeof AdminAdminUsersRouteWithChildren
   '/s/$shipId': typeof AuthenticatedSShipIdRoute
-  '/u/$username': typeof AuthenticatedUUsernameRoute
   '/admin/': typeof AdminAdminIndexRoute
   '/admin/users/$id': typeof AdminAdminUsersIdRoute
   '/api/public/hooks/autopost': typeof ApiPublicHooksAutopostRoute
@@ -217,6 +217,7 @@ export interface FileRoutesByTo {
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/blog/building-in-public-with-ai': typeof BlogBuildingInPublicWithAiRoute
+  '/u/$username': typeof UUsernameRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/admin/activity': typeof AdminAdminActivityRoute
@@ -225,7 +226,6 @@ export interface FileRoutesByTo {
   '/admin/ships': typeof AdminAdminShipsRoute
   '/admin/users': typeof AdminAdminUsersRouteWithChildren
   '/s/$shipId': typeof AuthenticatedSShipIdRoute
-  '/u/$username': typeof AuthenticatedUUsernameRoute
   '/admin': typeof AdminAdminIndexRoute
   '/admin/users/$id': typeof AdminAdminUsersIdRoute
   '/api/public/hooks/autopost': typeof ApiPublicHooksAutopostRoute
@@ -247,6 +247,7 @@ export interface FileRoutesById {
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/blog/building-in-public-with-ai': typeof BlogBuildingInPublicWithAiRoute
+  '/u/$username': typeof UUsernameRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/_admin/admin/activity': typeof AdminAdminActivityRoute
@@ -255,7 +256,6 @@ export interface FileRoutesById {
   '/_admin/admin/ships': typeof AdminAdminShipsRoute
   '/_admin/admin/users': typeof AdminAdminUsersRouteWithChildren
   '/_authenticated/s/$shipId': typeof AuthenticatedSShipIdRoute
-  '/_authenticated/u/$username': typeof AuthenticatedUUsernameRoute
   '/_admin/admin/': typeof AdminAdminIndexRoute
   '/_admin/admin/users/$id': typeof AdminAdminUsersIdRoute
   '/api/public/hooks/autopost': typeof ApiPublicHooksAutopostRoute
@@ -276,6 +276,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/profile'
     | '/blog/building-in-public-with-ai'
+    | '/u/$username'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/admin/activity'
@@ -284,7 +285,6 @@ export interface FileRouteTypes {
     | '/admin/ships'
     | '/admin/users'
     | '/s/$shipId'
-    | '/u/$username'
     | '/admin/'
     | '/admin/users/$id'
     | '/api/public/hooks/autopost'
@@ -303,6 +303,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/profile'
     | '/blog/building-in-public-with-ai'
+    | '/u/$username'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/admin/activity'
@@ -311,7 +312,6 @@ export interface FileRouteTypes {
     | '/admin/ships'
     | '/admin/users'
     | '/s/$shipId'
-    | '/u/$username'
     | '/admin'
     | '/admin/users/$id'
     | '/api/public/hooks/autopost'
@@ -332,6 +332,7 @@ export interface FileRouteTypes {
     | '/_authenticated/onboarding'
     | '/_authenticated/profile'
     | '/blog/building-in-public-with-ai'
+    | '/u/$username'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/_admin/admin/activity'
@@ -340,7 +341,6 @@ export interface FileRouteTypes {
     | '/_admin/admin/ships'
     | '/_admin/admin/users'
     | '/_authenticated/s/$shipId'
-    | '/_authenticated/u/$username'
     | '/_admin/admin/'
     | '/_admin/admin/users/$id'
     | '/api/public/hooks/autopost'
@@ -357,6 +357,7 @@ export interface RootRouteChildren {
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   BlogBuildingInPublicWithAiRoute: typeof BlogBuildingInPublicWithAiRoute
+  UUsernameRoute: typeof UUsernameRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiPublicHooksAutopostRoute: typeof ApiPublicHooksAutopostRoute
@@ -411,6 +412,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/u/$username': {
+      id: '/u/$username'
+      path: '/u/$username'
+      fullPath: '/u/$username'
+      preLoaderRoute: typeof UUsernameRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/blog/building-in-public-with-ai': {
@@ -475,13 +483,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/'
       preLoaderRoute: typeof AdminAdminIndexRouteImport
       parentRoute: typeof AdminRouteRoute
-    }
-    '/_authenticated/u/$username': {
-      id: '/_authenticated/u/$username'
-      path: '/u/$username'
-      fullPath: '/u/$username'
-      preLoaderRoute: typeof AuthenticatedUUsernameRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/s/$shipId': {
       id: '/_authenticated/s/$shipId'
@@ -597,7 +598,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedSShipIdRoute: typeof AuthenticatedSShipIdRoute
-  AuthenticatedUUsernameRoute: typeof AuthenticatedUUsernameRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -607,7 +607,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedSShipIdRoute: AuthenticatedSShipIdRoute,
-  AuthenticatedUUsernameRoute: AuthenticatedUUsernameRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -625,6 +624,7 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   BlogBuildingInPublicWithAiRoute: BlogBuildingInPublicWithAiRoute,
+  UUsernameRoute: UUsernameRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiPublicHooksAutopostRoute: ApiPublicHooksAutopostRoute,

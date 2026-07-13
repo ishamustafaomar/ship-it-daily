@@ -10,9 +10,15 @@ import { ShipCard } from "@/components/ShipCard";
 import { UserAvatar } from "@/components/UserAvatar";
 import { Button } from "@/components/ui/button";
 import { TagInput } from "@/components/TagInput";
-import { getProfileByUsername, toggleFollow, updateMyProfile } from "@/lib/api.functions";
+import {
+  getProfileByUsername,
+  getPublicProfile,
+  toggleFollow,
+  updateMyProfile,
+} from "@/lib/api.functions";
+import { useSession } from "@/hooks/use-session";
 
-export const Route = createFileRoute("/_authenticated/u/$username")({
+export const Route = createFileRoute("/u/$username")({
   component: ProfilePage,
   head: ({ params }) => ({
     meta: [
@@ -28,20 +34,26 @@ export const Route = createFileRoute("/_authenticated/u/$username")({
 });
 
 function ProfilePage() {
-  const { username } = useParams({ from: "/_authenticated/u/$username" });
+  const { username } = useParams({ from: "/u/$username" });
   const qc = useQueryClient();
-  const fetchFn = useServerFn(getProfileByUsername);
+  const { session, loading: sessionLoading } = useSession();
+  const authedFn = useServerFn(getProfileByUsername);
+  const publicFn = useServerFn(getPublicProfile);
   const followFn = useServerFn(toggleFollow);
   const { data, isLoading } = useQuery({
-    queryKey: ["profile", username],
-    queryFn: () => fetchFn({ data: { username } }),
+    queryKey: ["profile", username, !!session],
+    enabled: !sessionLoading,
+    queryFn: () =>
+      session
+        ? authedFn({ data: { username } })
+        : publicFn({ data: { username } }),
   });
 
   const follow = useMutation({
     mutationFn: async (next: boolean) =>
       followFn({ data: { profileId: data!.profile.id, following: next } }),
     onMutate: (next) => {
-      qc.setQueryData(["profile", username], (old: any) =>
+      qc.setQueryData(["profile", username, !!session], (old: any) =>
         old
           ? {
               ...old,
@@ -56,7 +68,7 @@ function ProfilePage() {
 
   return (
     <AppShell right={<RightRail />}>
-      {isLoading ? (
+      {isLoading || sessionLoading ? (
         <div className="flex items-center justify-center p-10">
           <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
         </div>
@@ -97,7 +109,7 @@ function ProfilePage() {
                   </span>
                 </div>
               </div>
-              {!data.is_me ? (
+              {!data.is_me && session ? (
                 <Button
                   variant={data.is_following ? "secondary" : "default"}
                   onClick={() => follow.mutate(!data.is_following)}
@@ -105,6 +117,10 @@ function ProfilePage() {
                 >
                   {data.is_following ? "Following" : "Follow"}
                 </Button>
+              ) : !data.is_me && !session ? (
+                <Link to="/auth" search={{ next: `/u/${username}` }}>
+                  <Button size="sm">Follow</Button>
+                </Link>
               ) : null}
             </div>
           </header>

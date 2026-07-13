@@ -1,6 +1,22 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { createClient } from "@supabase/supabase-js";
+
+function createAnonSupabase() {
+  return createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_PUBLISHABLE_KEY!, {
+    global: {
+      fetch: (input, init) => {
+        const headers = new Headers(init?.headers);
+        headers.set("apikey", process.env.SUPABASE_PUBLISHABLE_KEY!);
+        headers.delete("Authorization");
+        return fetch(input as any, { ...init, headers });
+      },
+    },
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+}
+const ANON_UUID = "00000000-0000-0000-0000-000000000000";
 
 // Only allow http(s) links — blocks javascript:, data:, vbscript:, etc.
 const httpUrl = z
@@ -226,6 +242,43 @@ export const getProfileByUsername = createServerFn({ method: "GET" })
       following: following ?? 0,
       is_following: !!followRow,
       is_me: profile.id === context.userId,
+      ships,
+    };
+  });
+
+// ============= Public profile view (no auth) =============
+export const getPublicProfile = createServerFn({ method: "GET" })
+  .inputValidator((d) => z.object({ username: z.string() }).parse(d))
+  .handler(async ({ data }) => {
+    const supabase = createAnonSupabase();
+    const { data: profile, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .ilike("username", data.username)
+      .maybeSingle();
+    if (error) throw error;
+    if (!profile) return null;
+
+    const [{ count: followers }, { count: following }] = await Promise.all([
+      supabase.from("follows").select("id", { count: "exact", head: true }).eq("following_id", profile.id),
+      supabase.from("follows").select("id", { count: "exact", head: true }).eq("follower_id", profile.id),
+    ]);
+
+    const { data: shipsRows } = await supabase
+      .from("ships")
+      .select("*")
+      .eq("author_id", profile.id)
+      .is("parent_ship_id", null)
+      .order("created_at", { ascending: false })
+      .limit(50);
+    const ships = await decorateShips(supabase, ANON_UUID, shipsRows ?? []);
+
+    return {
+      profile,
+      followers: followers ?? 0,
+      following: following ?? 0,
+      is_following: false,
+      is_me: false,
       ships,
     };
   });
