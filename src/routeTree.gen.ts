@@ -25,7 +25,6 @@ import { Route as AuthenticatedExploreRouteImport } from './routes/_authenticate
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as AdminAdminIndexRouteImport } from './routes/_admin/admin.index'
-import { Route as AuthenticatedUUsernameRouteImport } from './routes/_authenticated/u.$username'
 import { Route as AuthenticatedSShipIdRouteImport } from './routes/_authenticated/s.$shipId'
 import { Route as AdminAdminUsersRouteImport } from './routes/_admin/admin.users'
 import { Route as AdminAdminShipsRouteImport } from './routes/_admin/admin.ships'
@@ -119,11 +118,6 @@ const AdminAdminIndexRoute = AdminAdminIndexRouteImport.update({
   path: '/admin/',
   getParentRoute: () => AdminRouteRoute,
 } as any)
-const AuthenticatedUUsernameRoute = AuthenticatedUUsernameRouteImport.update({
-  id: '/u/$username',
-  path: '/u/$username',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedSShipIdRoute = AuthenticatedSShipIdRouteImport.update({
   id: '/s/$shipId',
   path: '/s/$shipId',
@@ -198,7 +192,6 @@ export interface FileRoutesByFullPath {
   '/admin/ships': typeof AdminAdminShipsRoute
   '/admin/users': typeof AdminAdminUsersRouteWithChildren
   '/s/$shipId': typeof AuthenticatedSShipIdRoute
-  '/u/$username': typeof AuthenticatedUUsernameRoute
   '/admin/': typeof AdminAdminIndexRoute
   '/admin/users/$id': typeof AdminAdminUsersIdRoute
   '/api/public/hooks/autopost': typeof ApiPublicHooksAutopostRoute
@@ -225,7 +218,6 @@ export interface FileRoutesByTo {
   '/admin/ships': typeof AdminAdminShipsRoute
   '/admin/users': typeof AdminAdminUsersRouteWithChildren
   '/s/$shipId': typeof AuthenticatedSShipIdRoute
-  '/u/$username': typeof AuthenticatedUUsernameRoute
   '/admin': typeof AdminAdminIndexRoute
   '/admin/users/$id': typeof AdminAdminUsersIdRoute
   '/api/public/hooks/autopost': typeof ApiPublicHooksAutopostRoute
@@ -255,7 +247,6 @@ export interface FileRoutesById {
   '/_admin/admin/ships': typeof AdminAdminShipsRoute
   '/_admin/admin/users': typeof AdminAdminUsersRouteWithChildren
   '/_authenticated/s/$shipId': typeof AuthenticatedSShipIdRoute
-  '/_authenticated/u/$username': typeof AuthenticatedUUsernameRoute
   '/_admin/admin/': typeof AdminAdminIndexRoute
   '/_admin/admin/users/$id': typeof AdminAdminUsersIdRoute
   '/api/public/hooks/autopost': typeof ApiPublicHooksAutopostRoute
@@ -284,7 +275,6 @@ export interface FileRouteTypes {
     | '/admin/ships'
     | '/admin/users'
     | '/s/$shipId'
-    | '/u/$username'
     | '/admin/'
     | '/admin/users/$id'
     | '/api/public/hooks/autopost'
@@ -311,7 +301,6 @@ export interface FileRouteTypes {
     | '/admin/ships'
     | '/admin/users'
     | '/s/$shipId'
-    | '/u/$username'
     | '/admin'
     | '/admin/users/$id'
     | '/api/public/hooks/autopost'
@@ -340,7 +329,6 @@ export interface FileRouteTypes {
     | '/_admin/admin/ships'
     | '/_admin/admin/users'
     | '/_authenticated/s/$shipId'
-    | '/_authenticated/u/$username'
     | '/_admin/admin/'
     | '/_admin/admin/users/$id'
     | '/api/public/hooks/autopost'
@@ -476,13 +464,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAdminIndexRouteImport
       parentRoute: typeof AdminRouteRoute
     }
-    '/_authenticated/u/$username': {
-      id: '/_authenticated/u/$username'
-      path: '/u/$username'
-      fullPath: '/u/$username'
-      preLoaderRoute: typeof AuthenticatedUUsernameRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/s/$shipId': {
       id: '/_authenticated/s/$shipId'
       path: '/s/$shipId'
@@ -597,7 +578,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedSShipIdRoute: typeof AuthenticatedSShipIdRoute
-  AuthenticatedUUsernameRoute: typeof AuthenticatedUUsernameRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -607,7 +587,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedSShipIdRoute: AuthenticatedSShipIdRoute,
-  AuthenticatedUUsernameRoute: AuthenticatedUUsernameRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
