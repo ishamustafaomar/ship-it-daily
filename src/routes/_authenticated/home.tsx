@@ -140,11 +140,7 @@ function HomePage() {
             <FollowingEmpty />
           </>
         ) : (
-          !activeTag && !activeTool ? (
-            <ExampleShips />
-          ) : (
-            <EmptyState tab={activeTab} tag={activeTag} tool={activeTool} />
-          )
+          <EmptyState tab={activeTab} tag={activeTag} tool={activeTool} />
         )
       ) : (
         <>
