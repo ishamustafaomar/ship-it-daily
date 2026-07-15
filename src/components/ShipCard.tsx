@@ -8,6 +8,7 @@ import { deleteShip, toggleLike, toggleReship, toggleReaction, REACTION_EMOJIS }
 import { UserAvatar } from "./UserAvatar";
 import { ToolTag } from "./ToolTag";
 import { timeAgo } from "@/lib/format";
+import { useSession } from "@/hooks/use-session";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,6 +39,8 @@ export function ShipCard({
   const reship = useServerFn(toggleReship);
   const del = useServerFn(deleteShip);
   const react = useServerFn(toggleReaction);
+  const { session } = useSession();
+  const signedIn = !!session;
 
   const patch = (fn: (s: FeedShip) => FeedShip) => {
     qc.setQueriesData({ queryKey: ["feed"] }, (data: any) => {
@@ -229,6 +232,7 @@ export function ShipCard({
             {ship.reactions.length > 0 ? (
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {ship.reactions.map((r) => (
+                  signedIn ? (
                   <button
                     key={r.emoji}
                     onClick={() => reactM.mutate({ emoji: r.emoji, active: !r.mine })}
@@ -241,9 +245,19 @@ export function ShipCard({
                     <span>{r.emoji}</span>
                     <span className="font-mono">{r.count}</span>
                   </button>
+                  ) : (
+                    <span
+                      key={r.emoji}
+                      className="inline-flex items-center gap-1 rounded-full border border-border bg-secondary/40 px-2 py-0.5 text-xs text-foreground min-h-[28px]"
+                    >
+                      <span>{r.emoji}</span>
+                      <span className="font-mono">{r.count}</span>
+                    </span>
+                  )
                 ))}
               </div>
             ) : null}
+            {signedIn ? (
             <div className="mt-3 flex items-center gap-6 text-muted-foreground">
               <button
                 onClick={() => onReply?.(ship)}
@@ -299,6 +313,28 @@ export function ShipCard({
                 </PopoverContent>
               </Popover>
             </div>
+            ) : (
+              <div className="mt-3 flex items-center gap-6 text-muted-foreground">
+                <span className="inline-flex items-center gap-1.5 text-xs">
+                  <MessageCircle className="h-4 w-4" />
+                  <span className="font-mono">{nf(ship.reply_count)}</span>
+                </span>
+                <span className="inline-flex items-center gap-1.5 text-xs">
+                  <Repeat2 className="h-4 w-4" />
+                  <span className="font-mono">{nf(ship.reship_count)}</span>
+                </span>
+                <span className="inline-flex items-center gap-1.5 text-xs">
+                  <Heart className="h-4 w-4" />
+                  <span className="font-mono">{nf(ship.like_count)}</span>
+                </span>
+                <Link
+                  to="/auth"
+                  className="ml-auto font-mono text-[11px] text-primary hover:underline"
+                >
+                  Sign in to react
+                </Link>
+              </div>
+            )}
             </>
           ) : null}
         </div>
