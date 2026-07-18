@@ -33,10 +33,24 @@ function AuthPage() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
+    let done = false;
+    const go = () => {
+      if (done) return;
+      done = true;
+      window.location.href = destination;
+    };
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) window.location.href = destination;
+      if (data.session) go();
     });
-  }, [navigate, destination]);
+    // Also react to any later sign-in event (OAuth popup, magic link, etc.)
+    // so the auth page never lingers after a session lands.
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session && (event === "SIGNED_IN" || event === "INITIAL_SESSION" || event === "TOKEN_REFRESHED")) {
+        go();
+      }
+    });
+    return () => sub.subscription.unsubscribe();
+  }, [destination]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
