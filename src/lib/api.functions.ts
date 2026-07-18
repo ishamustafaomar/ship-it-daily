@@ -190,7 +190,15 @@ export const updateMyProfile = createServerFn({ method: "POST" })
         display_name: z.string().min(1).max(60).optional(),
         bio: z.string().max(280).nullable().optional(),
         building_now: z.string().max(120).nullable().optional(),
-        avatar_url: z.string().url().nullable().optional(),
+        avatar_url: z
+          .string()
+          .max(500)
+          .refine(
+            (v) => /^https?:\/\//i.test(v) || /^storage:[a-z0-9_-]+\/.+/i.test(v),
+            "Invalid avatar url",
+          )
+          .nullable()
+          .optional(),
         focus_tags: tagArray(5).optional(),
       })
       .parse(d),
