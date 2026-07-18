@@ -278,12 +278,9 @@ function EditProfileDialog({
         .from("ship-images")
         .upload(path, file, { upsert: true, contentType: file.type });
       if (upErr) throw upErr;
-      // 1-year signed URL — refreshed whenever the user re-uploads.
-      const { data: signed, error: signErr } = await supabase.storage
-        .from("ship-images")
-        .createSignedUrl(path, 60 * 60 * 24 * 365);
-      if (signErr) throw signErr;
-      setAvatarUrl(signed.signedUrl);
+      // Store a storage reference; UserAvatar mints a fresh signed URL on
+      // each load so photos never break when the signature expires.
+      setAvatarUrl(`storage:ship-images/${path}`);
     } catch (e: any) {
       toast.error(e?.message ?? "Upload failed");
     } finally {
