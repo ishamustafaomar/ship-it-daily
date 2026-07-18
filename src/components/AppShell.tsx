@@ -100,6 +100,10 @@ export function AppShell({
         >
           Connect to ChatGPT / Claude →
         </Link>
+        <div className="mb-2 flex items-center gap-3 px-3 text-xs text-muted-foreground">
+          <Link to="/privacy" className="hover:text-foreground">Privacy</Link>
+          <Link to="/terms" className="hover:text-foreground">Terms</Link>
+        </div>
         {adminInfo?.admin ? (
           <Link
             to="/admin"
@@ -143,6 +147,10 @@ export function AppShell({
           ) : null}
         </div>
         {children}
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 border-t border-border/70 px-4 pt-4 text-xs text-muted-foreground md:hidden">
+          <Link to="/privacy" className="hover:text-foreground">Privacy</Link>
+          <Link to="/terms" className="hover:text-foreground">Terms</Link>
+        </div>
       </main>
 
       {/* Right rail */}
