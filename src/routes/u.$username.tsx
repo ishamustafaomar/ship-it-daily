@@ -9,6 +9,18 @@ import { RightRail } from "@/components/RightRail";
 import { ShipCard } from "@/components/ShipCard";
 import { UserAvatar } from "@/components/UserAvatar";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { supabase } from "@/integrations/supabase/client";
 import { TagInput } from "@/components/TagInput";
 import {
   getProfileByUsername,
@@ -121,7 +133,12 @@ function ProfilePage() {
                 <Link to="/auth" search={{ next: `/u/${username}` }}>
                   <Button size="sm">Follow</Button>
                 </Link>
-              ) : null}
+              ) : (
+                <EditProfileDialog
+                  profile={data.profile}
+                  onSaved={() => qc.invalidateQueries({ queryKey: ["profile", username] })}
+                />
+              )}
             </div>
           </header>
 
@@ -214,5 +231,154 @@ function FocusTagsSection({
         </div>
       )}
     </div>
+  );
+}
+
+function EditProfileDialog({
+  profile,
+  onSaved,
+}: {
+  profile: {
+    id: string;
+    display_name: string | null;
+    bio: string | null;
+    avatar_url: string | null;
+  };
+  onSaved: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [displayName, setDisplayName] = useState(profile.display_name ?? "");
+  const [bio, setBio] = useState(profile.bio ?? "");
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(profile.avatar_url);
+  const [uploading, setUploading] = useState(false);
+  const saveFn = useServerFn(updateMyProfile);
+
+  useEffect(() => {
+    if (open) {
+      setDisplayName(profile.display_name ?? "");
+      setBio(profile.bio ?? "");
+      setAvatarUrl(profile.avatar_url);
+    }
+  }, [open, profile]);
+
+  async function handleFile(file: File) {
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please choose an image file");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be under 5MB");
+      return;
+    }
+    setUploading(true);
+    try {
+      const ext = (file.name.split(".").pop() ?? "png").toLowerCase().replace(/[^a-z0-9]/g, "") || "png";
+      const path = `${profile.id}/avatar-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("ship-images")
+        .upload(path, file, { upsert: true, contentType: file.type });
+      if (upErr) throw upErr;
+      // 1-year signed URL — refreshed whenever the user re-uploads.
+      const { data: signed, error: signErr } = await supabase.storage
+        .from("ship-images")
+        .createSignedUrl(path, 60 * 60 * 24 * 365);
+      if (signErr) throw signErr;
+      setAvatarUrl(signed.signedUrl);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  const save = useMutation({
+    mutationFn: async () =>
+      saveFn({
+        data: {
+          display_name: displayName.trim() || undefined,
+          bio: bio.trim() ? bio.trim() : null,
+          avatar_url: avatarUrl,
+        },
+      }),
+    onSuccess: () => {
+      toast.success("Profile updated");
+      setOpen(false);
+      onSaved();
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Save failed"),
+  });
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="secondary" size="sm">Edit profile</Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Edit profile</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <UserAvatar url={avatarUrl} name={displayName} size={64} />
+            <div className="flex flex-col gap-1.5">
+              <label className="cursor-pointer">
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) void handleFile(f);
+                    e.target.value = "";
+                  }}
+                />
+                <span className="inline-flex items-center rounded-md border border-border bg-secondary px-3 py-1.5 text-xs hover:bg-secondary/80">
+                  {uploading ? "Uploading…" : avatarUrl ? "Change photo" : "Upload photo"}
+                </span>
+              </label>
+              {avatarUrl ? (
+                <button
+                  type="button"
+                  onClick={() => setAvatarUrl(null)}
+                  className="text-left font-mono text-[11px] text-muted-foreground hover:text-foreground underline"
+                >
+                  remove
+                </button>
+              ) : null}
+            </div>
+          </div>
+          <div>
+            <Label htmlFor="display_name" className="text-xs">Display name</Label>
+            <Input
+              id="display_name"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              maxLength={60}
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <Label htmlFor="bio" className="text-xs">Bio</Label>
+            <Textarea
+              id="bio"
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              maxLength={280}
+              rows={3}
+              className="mt-1"
+            />
+            <p className="mt-1 font-mono text-[10px] text-muted-foreground">{bio.length}/280</p>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="ghost" onClick={() => setOpen(false)} disabled={save.isPending}>
+            Cancel
+          </Button>
+          <Button onClick={() => save.mutate()} disabled={save.isPending || uploading}>
+            {save.isPending ? "Saving…" : "Save"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

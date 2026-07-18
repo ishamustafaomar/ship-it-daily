@@ -419,9 +419,20 @@ export const toggleLike = createServerFn({ method: "POST" })
   .inputValidator((d) => z.object({ shipId: z.string().uuid(), liked: z.boolean() }).parse(d))
   .handler(async ({ context, data }) => {
     if (data.liked) {
-      await context.supabase.from("likes").insert({ ship_id: data.shipId, user_id: context.userId }).select();
+      const { error } = await context.supabase
+        .from("likes")
+        .upsert(
+          { ship_id: data.shipId, user_id: context.userId },
+          { onConflict: "ship_id,user_id", ignoreDuplicates: true },
+        );
+      if (error) throw error;
     } else {
-      await context.supabase.from("likes").delete().eq("ship_id", data.shipId).eq("user_id", context.userId);
+      const { error } = await context.supabase
+        .from("likes")
+        .delete()
+        .eq("ship_id", data.shipId)
+        .eq("user_id", context.userId);
+      if (error) throw error;
     }
     return { ok: true };
   });
@@ -432,9 +443,20 @@ export const toggleReship = createServerFn({ method: "POST" })
   .inputValidator((d) => z.object({ shipId: z.string().uuid(), reshipped: z.boolean() }).parse(d))
   .handler(async ({ context, data }) => {
     if (data.reshipped) {
-      await context.supabase.from("reships").insert({ ship_id: data.shipId, user_id: context.userId }).select();
+      const { error } = await context.supabase
+        .from("reships")
+        .upsert(
+          { ship_id: data.shipId, user_id: context.userId },
+          { onConflict: "ship_id,user_id", ignoreDuplicates: true },
+        );
+      if (error) throw error;
     } else {
-      await context.supabase.from("reships").delete().eq("ship_id", data.shipId).eq("user_id", context.userId);
+      const { error } = await context.supabase
+        .from("reships")
+        .delete()
+        .eq("ship_id", data.shipId)
+        .eq("user_id", context.userId);
+      if (error) throw error;
     }
     return { ok: true };
   });
@@ -453,17 +475,21 @@ export const toggleReaction = createServerFn({ method: "POST" })
   )
   .handler(async ({ context, data }) => {
     if (data.active) {
-      await context.supabase
+      const { error } = await context.supabase
         .from("reactions")
-        .insert({ ship_id: data.shipId, user_id: context.userId, emoji: data.emoji })
-        .select();
+        .upsert(
+          { ship_id: data.shipId, user_id: context.userId, emoji: data.emoji },
+          { onConflict: "ship_id,user_id,emoji", ignoreDuplicates: true },
+        );
+      if (error) throw error;
     } else {
-      await context.supabase
+      const { error } = await context.supabase
         .from("reactions")
         .delete()
         .eq("ship_id", data.shipId)
         .eq("user_id", context.userId)
         .eq("emoji", data.emoji);
+      if (error) throw error;
     }
     return { ok: true };
   });
