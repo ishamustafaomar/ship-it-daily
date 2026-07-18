@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import type { ReactNode } from "react";
 import { LegalFooter } from "@/components/LegalFooter";
 
 const LAST_UPDATED = "July 18, 2026";
@@ -190,7 +191,7 @@ function PrivacyPage() {
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="mt-8 space-y-3 text-[15px] leading-7 text-foreground/90 [&_a]:text-primary [&_a]:underline-offset-2 hover:[&_a]:underline [&_ul]:list-disc [&_ul]:space-y-2 [&_ul]:pl-6 [&_strong]:font-semibold [&_strong]:text-foreground">
       <h2 className="text-xl font-semibold tracking-tight text-foreground">{title}</h2>
