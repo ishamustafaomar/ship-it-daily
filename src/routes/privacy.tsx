@@ -109,8 +109,7 @@ function PrivacyPage() {
                 (database, auth, storage) is provided by Supabase.
               </li>
               <li>
-                <strong>Hosting.</strong> The site is hosted via Lovable and
-                Cloudflare.
+                <strong>Hosting.</strong> The site is hosted via Cloudflare.
               </li>
               <li>
                 <strong>Google.</strong> If you sign in with Google, Google
@@ -145,14 +144,6 @@ function PrivacyPage() {
             </p>
           </Section>
 
-          <Section title="Your rights">
-            <p>
-              You can edit your profile at any time, delete your posts, or ask
-              us to delete your account. Depending on where you live, you may
-              have additional rights under laws like GDPR or CCPA (access,
-              correction, deletion, portability). Contact us to exercise them.
-            </p>
-          </Section>
 
           <Section title="Children">
             <p>
@@ -169,18 +160,6 @@ function PrivacyPage() {
             </p>
           </Section>
 
-          <Section title="Contact">
-            <p>
-              Questions or requests? Email{" "}
-              <a
-                href="mailto:omarmlaptop@gmail.com"
-                className="text-primary hover:underline"
-              >
-                omarmlaptop@gmail.com
-              </a>
-              .
-            </p>
-          </Section>
         </article>
 
         <div className="mt-16 border-t border-border/70 pt-6">
