@@ -163,17 +163,8 @@ function TermsPage() {
             </p>
           </Section>
 
-          <Section title="Contact">
-            <p>
-              Questions? Email{" "}
-              <a
-                href="mailto:omarmlaptop@gmail.com"
-                className="text-primary hover:underline"
-              >
-                omarmlaptop@gmail.com
-              </a>
-              .
-            </p>
+          <Section title="">
+            <p>{"\n"}</p>
           </Section>
         </article>
 
