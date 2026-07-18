@@ -39,8 +39,10 @@ export function ShipCard({
   const reship = useServerFn(toggleReship);
   const del = useServerFn(deleteShip);
   const react = useServerFn(toggleReaction);
-  const { session } = useSession();
-  const signedIn = !!session;
+  const { session, loading: sessionLoading } = useSession();
+  // While the session is still loading, assume signed-in to avoid a
+  // "Sign in to react" flash for authenticated users on first render.
+  const signedIn = sessionLoading || !!session;
 
   const patch = (fn: (s: FeedShip) => FeedShip) => {
     qc.setQueriesData({ queryKey: ["feed"] }, (data: any) => {
