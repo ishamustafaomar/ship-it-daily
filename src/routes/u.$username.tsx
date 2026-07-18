@@ -9,6 +9,18 @@ import { RightRail } from "@/components/RightRail";
 import { ShipCard } from "@/components/ShipCard";
 import { UserAvatar } from "@/components/UserAvatar";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { supabase } from "@/integrations/supabase/client";
 import { TagInput } from "@/components/TagInput";
 import {
   getProfileByUsername,
@@ -121,7 +133,12 @@ function ProfilePage() {
                 <Link to="/auth" search={{ next: `/u/${username}` }}>
                   <Button size="sm">Follow</Button>
                 </Link>
-              ) : null}
+              ) : (
+                <EditProfileDialog
+                  profile={data.profile}
+                  onSaved={() => qc.invalidateQueries({ queryKey: ["profile", username] })}
+                />
+              )}
             </div>
           </header>
 
