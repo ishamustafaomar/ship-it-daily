@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Flame, Rocket, Users } from "lucide-react";
+import { Flame, Link as LinkIcon, Tag, Trophy, Users } from "lucide-react";
 import { useEffect } from "react";
 import { useSession } from "@/hooks/use-session";
 
