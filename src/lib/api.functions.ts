@@ -358,7 +358,13 @@ export const getProfileByUsername = createServerFn({ method: "GET" })
       .is("parent_ship_id", null)
       .order("created_at", { ascending: false })
       .limit(50);
-    const ships = await decorateShips(context.supabase, context.userId, shipsRows ?? []);
+    void shipsRows;
+    const { items: ships } = await buildTimelineForAuthors(
+      context.supabase,
+      context.userId,
+      [profile.id],
+      { limit: 50 },
+    );
 
     return {
       profile,
