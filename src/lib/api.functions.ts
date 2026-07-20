@@ -351,14 +351,6 @@ export const getProfileByUsername = createServerFn({ method: "GET" })
       context.supabase.from("follows").select("id").eq("follower_id", context.userId).eq("following_id", profile.id).maybeSingle(),
     ]);
 
-    const { data: shipsRows } = await context.supabase
-      .from("ships")
-      .select("*")
-      .eq("author_id", profile.id)
-      .is("parent_ship_id", null)
-      .order("created_at", { ascending: false })
-      .limit(50);
-    void shipsRows;
     const { items: ships } = await buildTimelineForAuthors(
       context.supabase,
       context.userId,
