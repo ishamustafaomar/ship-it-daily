@@ -64,13 +64,13 @@ function Landing() {
           Build in public, one day at a time
         </div>
         <h1 className="mx-auto max-w-2xl text-balance text-5xl font-semibold leading-[1.05] tracking-tight text-foreground md:text-6xl">
-          Ship something today.
+          Turn your daily work into a
           <br />
-          <span className="text-primary">Keep your streak.</span>
+          <span className="text-primary">public track record.</span>
         </h1>
         <p className="mx-auto mt-6 max-w-xl text-lg text-muted-foreground">
-          A daily feed for builders shipping apps and sites with Lovable, Cursor, Bolt, Replit, and v0.
-          Post what you shipped, tag the tool, follow other builders.
+          A low-pressure feed for builders shipping with Lovable, Cursor, Bolt, v0, and Replit.
+          Tag the tool, post what you built, and get found by people solving the same problems.
         </p>
         <div className="mt-8 flex justify-center gap-3">
           <Link
@@ -81,20 +81,62 @@ function Landing() {
           </Link>
         </div>
 
-        <h2 className="sr-only">Why ShippedIn</h2>
-        <div className="mt-20 grid gap-6 md:grid-cols-3">
-          {[
-            { icon: Rocket, title: "Ship daily", body: "Post short updates on what you built or learned today." },
-            { icon: Flame, title: "Keep a streak", body: "One ship per day keeps the flame alive." },
-            { icon: Users, title: "Find your people", body: "Follow builders shipping with the same tools as you." },
-          ].map((f) => (
-            <div key={f.title} className="rounded-xl border border-border bg-card p-5 text-left">
-              <f.icon className="h-5 w-5 text-primary" />
-              <h3 className="mt-3 text-base font-semibold">{f.title}</h3>
-              <p className="mt-1 text-sm text-muted-foreground">{f.body}</p>
+        <section aria-labelledby="why-shippedin" className="mt-20 text-left">
+          <h2 id="why-shippedin" className="text-center text-lg font-semibold text-foreground">
+            Why use ShippedIn
+          </h2>
+          <p className="mx-auto mt-2 max-w-lg text-center text-sm text-muted-foreground">
+            Concrete benefits for builders who ship with AI tools.
+          </p>
+
+          <div className="mt-8 rounded-2xl border border-primary/20 bg-primary/5 p-6">
+            <div className="flex items-start gap-4">
+              <div className="rounded-xl border border-primary/20 bg-primary/10 p-3">
+                <Tag className="h-6 w-6 text-primary" />
+              </div>
+              <div>
+                <h3 className="text-base font-semibold text-foreground">
+                  Get discovered by builders using the same tools
+                </h3>
+                <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                  Tag every ship with the tool you used — Lovable, Cursor, Bolt, v0, Replit, or anything else.
+                  Other builders searching that tool find you instantly.
+                </p>
+              </div>
             </div>
-          ))}
-        </div>
+          </div>
+
+          <div className="mt-6 grid gap-6 md:grid-cols-2">
+            {[
+              {
+                icon: Trophy,
+                title: "Build proof of what you've shipped",
+                body: "A running log of real projects, fixes, and launches. No portfolio needed.",
+              },
+              {
+                icon: Users,
+                title: "Find people stuck on the same thing",
+                body: "See ships tagged with the problems you're solving. Jump into threads, ask questions, share how you got past it.",
+              },
+              {
+                icon: Flame,
+                title: "Stay consistent without the grind",
+                body: "One small ship a day keeps your streak alive. Low pressure, high momentum.",
+              },
+              {
+                icon: LinkIcon,
+                title: "Link out to what you built",
+                body: "Every ship can include a link to your project, demo, repo, or landing page. Show, don't just tell.",
+              },
+            ].map((f) => (
+              <div key={f.title} className="rounded-xl border border-border bg-card p-5">
+                <f.icon className="h-5 w-5 text-primary" />
+                <h3 className="mt-3 text-base font-semibold text-foreground">{f.title}</h3>
+                <p className="mt-1 text-sm text-muted-foreground">{f.body}</p>
+              </div>
+            ))}
+          </div>
+        </section>
       </main>
       <footer className="mx-auto max-w-6xl border-t border-border/70 px-6 py-6 text-sm text-muted-foreground">
         <div className="flex flex-wrap items-center justify-between gap-3">
