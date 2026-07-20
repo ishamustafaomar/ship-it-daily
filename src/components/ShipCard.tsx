@@ -139,6 +139,18 @@ export function ShipCard({
 
   return (
     <article className="border-b border-border px-4 py-4 hover:bg-secondary/20 transition-colors">
+      {ship.reshipped_by ? (
+        <Link
+          to="/u/$username"
+          params={{ username: ship.reshipped_by.username ?? "anon" }}
+          className="mb-1.5 ml-12 flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+        >
+          <Repeat2 className="h-3.5 w-3.5" />
+          <span>
+            Reshipped by {ship.reshipped_by.display_name ?? `@${ship.reshipped_by.username ?? "anon"}`}
+          </span>
+        </Link>
+      ) : null}
       <div className="flex gap-3">
         <Link to="/u/$username" params={{ username }} className="shrink-0">
           <UserAvatar url={author.avatar_url} name={author.display_name ?? username} size={44} />
