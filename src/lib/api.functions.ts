@@ -386,14 +386,12 @@ export const getPublicProfile = createServerFn({ method: "GET" })
       supabase.from("follows").select("id", { count: "exact", head: true }).eq("follower_id", profile.id),
     ]);
 
-    const { data: shipsRows } = await supabase
-      .from("ships")
-      .select("*")
-      .eq("author_id", profile.id)
-      .is("parent_ship_id", null)
-      .order("created_at", { ascending: false })
-      .limit(50);
-    const ships = await decorateShips(supabase, ANON_UUID, shipsRows ?? []);
+    const { items: ships } = await buildTimelineForAuthors(
+      supabase,
+      ANON_UUID,
+      [profile.id],
+      { limit: 50 },
+    );
 
     return {
       profile,
@@ -421,6 +419,23 @@ export const getFeed = createServerFn({ method: "GET" })
   )
   .handler(async ({ context, data }) => {
     const limit = data.limit ?? 20;
+    // Following tab: interleave original ships and reships from the follow set
+    // so reshipping actually reposts to followers' timelines.
+    if (data.tab === "following" && !data.tag && !data.tool) {
+      const { data: follows } = await context.supabase
+        .from("follows")
+        .select("following_id")
+        .eq("follower_id", context.userId);
+      const authorIds = (follows ?? []).map((f: any) => f.following_id);
+      authorIds.push(context.userId);
+      const { items, nextCursor } = await buildTimelineForAuthors(
+        context.supabase,
+        context.userId,
+        authorIds,
+        { limit, cursor: data.cursor ?? null },
+      );
+      return { items, nextCursor, needsFocus: false };
+    }
     let query = context.supabase
       .from("ships")
       .select("*")
