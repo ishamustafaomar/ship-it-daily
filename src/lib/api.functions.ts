@@ -56,6 +56,13 @@ export type FeedShip = {
   liked_by_me: boolean;
   reshipped_by_me: boolean;
   reactions: { emoji: string; count: number; mine: boolean }[];
+  reshipped_by?: {
+    id: string;
+    username: string | null;
+    display_name: string | null;
+    avatar_url: string | null;
+    at: string;
+  } | null;
 };
 
 export const REACTION_EMOJIS = ["🔥", "🚀", "👏", "💡", "🎉"] as const;
