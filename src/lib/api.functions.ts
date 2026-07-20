@@ -174,6 +174,115 @@ async function decorateShips(
   }));
 }
 
+// Build a timeline that interleaves original ships and reships for a set of
+// author/reshipper ids. Returns decorated ships in reverse-chronological order
+// of "activity" (original: created_at; reship: reship created_at). A reshipped
+// entry carries a `reshipped_by` marker so the UI can render "Reshipped by X".
+async function buildTimelineForAuthors(
+  supabase: any,
+  userId: string,
+  authorIds: string[],
+  opts: { limit: number; cursor?: string | null },
+): Promise<{ items: FeedShip[]; nextCursor: string | null }> {
+  const { limit, cursor } = opts;
+  if (authorIds.length === 0) return { items: [], nextCursor: null };
+
+  let shipsQ = supabase
+    .from("ships")
+    .select("*")
+    .is("parent_ship_id", null)
+    .in("author_id", authorIds)
+    .order("created_at", { ascending: false })
+    .limit(limit + 1);
+  let reshipsQ = supabase
+    .from("reships")
+    .select("ship_id, user_id, created_at")
+    .in("user_id", authorIds)
+    .order("created_at", { ascending: false })
+    .limit(limit + 1);
+  if (cursor) {
+    shipsQ = shipsQ.lt("created_at", cursor);
+    reshipsQ = reshipsQ.lt("created_at", cursor);
+  }
+  const [shipsRes, reshipsRes] = await Promise.all([shipsQ, reshipsQ]);
+
+  const authoredRows = shipsRes.data ?? [];
+  const reshipRows = reshipsRes.data ?? [];
+
+  // Fetch ship rows for reshipped ids not already loaded
+  const authoredIds = new Set(authoredRows.map((r: any) => r.id));
+  const missingIds = Array.from(
+    new Set(reshipRows.map((r: any) => r.ship_id).filter((id: string) => !authoredIds.has(id))),
+  );
+  let extraRows: any[] = [];
+  if (missingIds.length) {
+    const { data } = await supabase
+      .from("ships")
+      .select("*")
+      .in("id", missingIds);
+    extraRows = data ?? [];
+  }
+  const rowById: Record<string, any> = {};
+  [...authoredRows, ...extraRows].forEach((r: any) => {
+    rowById[r.id] = r;
+  });
+
+  // Fetch reshipper profiles
+  const reshipperIds = Array.from(new Set(reshipRows.map((r: any) => r.user_id)));
+  const reshippers: Record<string, any> = {};
+  if (reshipperIds.length) {
+    const { data } = await supabase
+      .from("profiles")
+      .select("id, username, display_name, avatar_url")
+      .in("id", reshipperIds);
+    (data ?? []).forEach((p: any) => {
+      reshippers[p.id] = p;
+    });
+  }
+
+  type Entry = { row: any; activity_at: string; reshipped_by?: any };
+  const entries: Entry[] = [];
+  authoredRows.forEach((r: any) => {
+    entries.push({ row: r, activity_at: r.created_at });
+  });
+  reshipRows.forEach((rs: any) => {
+    const row = rowById[rs.ship_id];
+    if (!row) return;
+    // Skip if this user is the original author (should not happen, but be safe)
+    if (row.author_id === rs.user_id) return;
+    entries.push({
+      row,
+      activity_at: rs.created_at,
+      reshipped_by: {
+        ...(reshippers[rs.user_id] ?? { id: rs.user_id, username: null, display_name: null, avatar_url: null }),
+        at: rs.created_at,
+      },
+    });
+  });
+
+  entries.sort((a, b) => (a.activity_at < b.activity_at ? 1 : -1));
+  const hasMore = entries.length > limit;
+  const slice = entries.slice(0, limit);
+
+  const decorated = await decorateShips(
+    supabase,
+    userId,
+    slice.map((e) => e.row),
+  );
+  const byId: Record<string, FeedShip> = {};
+  decorated.forEach((d) => {
+    byId[d.id] = d;
+  });
+  const items: FeedShip[] = slice.map((e) => ({
+    ...(byId[e.row.id] as FeedShip),
+    reshipped_by: e.reshipped_by ?? null,
+  }));
+  return {
+    items,
+    nextCursor: hasMore ? slice[slice.length - 1].activity_at : null,
+  };
+}
+
 // ============= Current viewer's profile =============
 export const getMyProfile = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
