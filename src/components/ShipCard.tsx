@@ -97,6 +97,12 @@ export function ShipCard({
       }));
       toast.error("Could not reship");
     },
+    onSuccess: async () => {
+      // A reship is profile activity as well as feed activity. Clear every
+      // cached profile variant so opening the reshipper's profile cannot show
+      // the empty result that was cached before this action.
+      await qc.invalidateQueries({ queryKey: ["profile"] });
+    },
     onSettled: () => qc.invalidateQueries({ queryKey: ["feed"] }),
   });
 
