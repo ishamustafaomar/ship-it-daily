@@ -55,6 +55,10 @@ function ProfilePage() {
   const { data, isLoading } = useQuery({
     queryKey: ["profile", username, !!session],
     enabled: !sessionLoading,
+    // Profile activity changes from feed actions (especially reships), so a
+    // profile navigation must always refresh instead of reusing an old empty
+    // timeline from the query cache.
+    refetchOnMount: "always",
     queryFn: () =>
       session
         ? authedFn({ data: { username } })
