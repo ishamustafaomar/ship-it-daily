@@ -279,13 +279,14 @@ export function ShipCard({
             ) : null}
             {signedIn ? (
             <div className="mt-3 flex items-center gap-6 text-muted-foreground">
-              <button
-                onClick={() => onReply?.(ship)}
+              <Link
+                to="/s/$shipId"
+                params={{ shipId: ship.id }}
                 className="inline-flex items-center gap-1.5 text-xs hover:text-primary"
               >
                 <MessageCircle className="h-4 w-4" />
                 <span className="font-mono">{nf(ship.reply_count)}</span>
-              </button>
+              </Link>
               <button
                 onClick={() => reshipM.mutate(!ship.reshipped_by_me)}
                 className={`inline-flex items-center gap-1.5 text-xs hover:text-primary ${
