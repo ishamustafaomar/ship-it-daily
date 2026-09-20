@@ -11,6 +11,7 @@ import { RightRail } from "@/components/RightRail";
 import { Composer } from "@/components/Composer";
 import { ShipCard } from "@/components/ShipCard";
 import { ExampleShips } from "@/components/ExampleShips";
+import { GuestWelcome } from "@/components/GuestWelcome";
 import { TagInput } from "@/components/TagInput";
 import { UserAvatar } from "@/components/UserAvatar";
 import { Button } from "@/components/ui/button";
@@ -125,7 +126,7 @@ function HomePage() {
           </button>
         </div>
       ) : !sessionLoading && !session ? (
-        <div className="border-b border-border/70 px-4 py-3"><Link to="/auth" search={{ next: "/home" }} className="block rounded-md border border-border bg-secondary/40 px-4 py-3 text-center text-sm font-medium text-primary hover:bg-secondary">Sign in to post or join the conversation</Link></div>
+        <GuestWelcome />
       ) : null}
 
       {me?.username ? (
