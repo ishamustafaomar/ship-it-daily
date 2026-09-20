@@ -204,14 +204,12 @@ export function ShipCard({
             </div>
           </div>
 
-          <Link
-            to="/s/$shipId"
-            params={{ shipId: ship.id }}
-            className="block"
-          >
+          <div>
+            <Link to="/s/$shipId" params={{ shipId: ship.id }} className="block">
             <p className="mt-1 whitespace-pre-wrap text-[15px] leading-snug text-foreground">
               {ship.body}
             </p>
+            </Link>
             {ship.link_url ? (
               <a
                 href={ship.link_url}
@@ -225,11 +223,11 @@ export function ShipCard({
               </a>
             ) : null}
             {ship.image_signed_url ? (
-              <div className="mt-2 overflow-hidden rounded-lg border border-border">
+              <Link to="/s/$shipId" params={{ shipId: ship.id }} className="mt-2 block overflow-hidden rounded-lg border border-border">
                 <img src={ship.image_signed_url} alt="" className="max-h-[420px] w-full object-cover" />
-              </div>
+              </Link>
             ) : null}
-          </Link>
+          </div>
 
           {ship.topic_tags && ship.topic_tags.length > 0 ? (
             <div className="mt-2 flex flex-wrap gap-1.5">

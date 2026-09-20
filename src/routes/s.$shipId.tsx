@@ -19,6 +19,7 @@ export const Route = createFileRoute("/s/$shipId")({
       { property: "og:description", content: "See the update, tool used, and replies from other builders on ShippedIn." },
       { property: "og:type", content: "article" },
       { property: "og:url", content: `https://shippedin.dev/s/${params.shipId}` },
+      { name: "twitter:card", content: "summary" },
     ],
     links: [{ rel: "canonical", href: `https://shippedin.dev/s/${params.shipId}` }],
   }),
