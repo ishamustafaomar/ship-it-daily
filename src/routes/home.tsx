@@ -29,7 +29,7 @@ const searchSchema = z.object({
   tool: fallback(z.string(), "").default(""),
 });
 
-export const Route = createFileRoute("/_authenticated/home")({
+export const Route = createFileRoute("/home")({
   component: HomePage,
   validateSearch: zodValidator(searchSchema),
   head: () => ({

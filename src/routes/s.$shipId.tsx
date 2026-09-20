@@ -8,7 +8,7 @@ import { ShipCard } from "@/components/ShipCard";
 import { Composer } from "@/components/Composer";
 import { getMyProfile, getShipDetail } from "@/lib/api.functions";
 
-export const Route = createFileRoute("/_authenticated/s/$shipId")({
+export const Route = createFileRoute("/s/$shipId")({
   component: ShipDetail,
   head: ({ params }) => ({
     meta: [
