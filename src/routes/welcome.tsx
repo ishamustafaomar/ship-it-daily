@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useSession } from "@/hooks/use-session";
 import { BrandMark } from "@/components/BrandMark";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/welcome")({
   component: Landing,
   head: () => ({
     meta: [
