@@ -454,7 +454,18 @@ export async function publishGenerated(
   if (hErr || !row) throw new Error("History entry not found");
   if (row.published) throw new Error("Already published");
 
-  const botId = await ensureBotUser();
+  // Author as the persona attached to this draft; fall back to the house account.
+  let botId: string;
+  if (row.persona_id) {
+    const { data: p } = await supabaseAdmin
+      .from("bot_personas")
+      .select("id, username, display_name, bio, voice, weight, user_id")
+      .eq("id", row.persona_id)
+      .maybeSingle();
+    botId = p ? await ensurePersonaUser(p as Persona) : await ensureBotUser();
+  } else {
+    botId = await ensureBotUser();
+  }
 
   const body = (overrides?.body ?? row.generated_text).trim();
   if (!body) throw new Error("Empty body");
