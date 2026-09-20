@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Flame, Link as LinkIcon, Tag, Trophy, Users } from "lucide-react";
 import { useEffect } from "react";
 import { useSession } from "@/hooks/use-session";
+import { BrandMark } from "@/components/BrandMark";
 
 export const Route = createFileRoute("/")({
   component: Landing,
@@ -28,7 +29,7 @@ function Landing() {
     <div className="min-h-screen">
       <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
         <div className="flex items-center gap-2">
-          <span className="inline-block h-2.5 w-2.5 rounded-full bg-primary" />
+          <BrandMark className="h-8 w-8" />
           <span className="font-mono text-lg font-semibold tracking-tight">ShippedIn</span>
         </div>
         <div className="flex items-center gap-3">

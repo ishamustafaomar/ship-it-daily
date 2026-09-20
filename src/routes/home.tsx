@@ -22,6 +22,7 @@ import {
   getRightRail,
   toggleFollow,
   updateMyProfile,
+  type FeedShip,
 } from "@/lib/api.functions";
 import { useSession } from "@/hooks/use-session";
 
@@ -69,9 +70,9 @@ function HomePage() {
     if (me && !me.username && !meFetching) navigate({ to: "/onboarding" });
   }, [me, meFetching, navigate]);
 
-  const feed = useInfiniteQuery({
+  const feed = useInfiniteQuery<{ items: FeedShip[]; nextCursor: string | null; needsFocus: boolean }>({
     queryKey: ["feed", session ? "member" : "guest", activeTab, activeTag, activeTool],
-    queryFn: ({ pageParam }) =>
+    queryFn: async ({ pageParam }) =>
       session ? feedFn({ data: {
           tab: activeTab,
           cursor: pageParam as string | null,

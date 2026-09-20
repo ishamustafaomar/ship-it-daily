@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { BrandMark } from "@/components/BrandMark";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
@@ -96,7 +97,7 @@ function AuthPage() {
     <div className="flex min-h-screen items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <Link to="/" className="mb-8 flex items-center justify-center gap-2">
-          <span className="inline-block h-2.5 w-2.5 rounded-full bg-primary" />
+          <BrandMark className="h-8 w-8" />
           <span className="font-mono text-xl font-semibold tracking-tight">ShippedIn</span>
         </Link>
 

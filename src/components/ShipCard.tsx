@@ -336,10 +336,10 @@ export function ShipCard({
             </div>
             ) : (
               <div className="mt-3 flex items-center gap-6 text-muted-foreground">
-                <span className="inline-flex items-center gap-1.5 text-xs">
+                <Link to="/s/$shipId" params={{ shipId: ship.id }} className="inline-flex items-center gap-1.5 text-xs hover:text-primary">
                   <MessageCircle className="h-4 w-4" />
                   <span className="font-mono">{nf(ship.reply_count)}</span>
-                </span>
+                </Link>
                 <span className="inline-flex items-center gap-1.5 text-xs">
                   <Repeat2 className="h-4 w-4" />
                   <span className="font-mono">{nf(ship.reship_count)}</span>
@@ -350,6 +350,7 @@ export function ShipCard({
                 </span>
                 <Link
                   to="/auth"
+                  search={{ next: `/s/${ship.id}` }}
                   className="ml-auto font-mono text-[11px] text-primary hover:underline"
                 >
                   Sign in to react

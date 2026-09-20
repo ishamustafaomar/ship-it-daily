@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Composer } from "./Composer";
 import { UserAvatar } from "./UserAvatar";
+import { BrandMark } from "./BrandMark";
+import { useSession } from "@/hooks/use-session";
 
 const NAV = [
   { label: "Home", to: "/home", icon: Home },
@@ -28,19 +30,22 @@ export function AppShell({
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
   const [composerOpen, setComposerOpen] = useState(false);
+  const { session, loading: sessionLoading } = useSession();
   const meFn = useServerFn(getMyProfile);
   const unreadFn = useServerFn(getUnreadCount);
   const adminFn = useServerFn(amIAdmin);
-  const { data: me } = useQuery({ queryKey: ["me"], queryFn: () => meFn() });
+  const { data: me } = useQuery({ queryKey: ["me", "shell"], queryFn: () => meFn(), enabled: !!session && !sessionLoading });
   const { data: unread } = useQuery({
     queryKey: ["unread"],
     queryFn: () => unreadFn(),
     refetchInterval: 30_000,
+    enabled: !!session && !sessionLoading,
   });
   const { data: adminInfo } = useQuery({
     queryKey: ["me", "admin"],
     queryFn: () => adminFn(),
     staleTime: 5 * 60_000,
+    enabled: !!session && !sessionLoading,
   });
 
   async function signOut() {
@@ -57,11 +62,11 @@ export function AppShell({
       {/* Left nav */}
       <aside className="sticky top-0 hidden h-screen w-[240px] shrink-0 flex-col border-r border-border/70 px-3 py-4 md:flex">
         <Link to="/home" className="mb-6 flex items-center gap-2 px-2">
-          <span className="inline-block h-2 w-2 rounded-full bg-primary" />
+          <BrandMark className="h-7 w-7" />
           <span className="font-mono text-lg font-semibold tracking-tight">ShippedIn</span>
         </Link>
         <nav className="flex flex-col gap-1">
-          {NAV.map((item) => {
+          {NAV.filter((item) => session || item.to === "/home").map((item) => {
             const Icon = item.icon;
             const active = activeIs(item.to);
             return (
@@ -85,14 +90,14 @@ export function AppShell({
             );
           })}
         </nav>
-        <Button
+        {session ? <Button
           className="mt-4 gap-2"
           onClick={() => setComposerOpen(true)}
           disabled={!me?.username}
         >
           <Plus className="h-4 w-4" />
           New Ship
-        </Button>
+        </Button> : <Button className="mt-4" asChild><Link to="/auth" search={{ next: "/home" }}>Sign in to post</Link></Button>}
 
         <Link
           to="/connect"
@@ -113,7 +118,7 @@ export function AppShell({
             Admin
           </Link>
         ) : null}
-        <div className="flex items-center gap-2 rounded-md border border-border/70 p-2">
+        {session ? <div className="flex items-center gap-2 rounded-md border border-border/70 p-2">
           <UserAvatar url={me?.avatar_url} name={me?.display_name} size={32} />
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-medium">{me?.display_name ?? "You"}</p>
@@ -128,7 +133,7 @@ export function AppShell({
           >
             <LogOut className="h-4 w-4" />
           </button>
-        </div>
+        </div> : <Link to="/auth" search={{ next: "/home" }} className="rounded-md border border-border/70 p-2 text-center text-sm font-medium text-primary hover:bg-secondary">Sign in</Link>}
       </aside>
 
       {/* Center */}
@@ -136,7 +141,7 @@ export function AppShell({
         {/* Mobile header */}
         <div className="sticky top-0 z-20 flex items-center justify-between border-b border-border/70 bg-background/80 px-4 py-3 backdrop-blur md:hidden">
           <Link to="/home" className="flex items-center gap-2">
-            <span className="inline-block h-2 w-2 rounded-full bg-primary" />
+            <BrandMark className="h-6 w-6" />
             <span className="font-mono text-base font-semibold">ShippedIn</span>
           </Link>
           {me?.streak_count ? (
@@ -160,7 +165,7 @@ export function AppShell({
 
       {/* Mobile bottom tab bar */}
       <div className="fixed inset-x-0 bottom-0 z-30 flex items-center justify-around border-t border-border/70 bg-background/95 py-2 backdrop-blur md:hidden">
-        {NAV.map((item) => {
+        {NAV.filter((item) => session || item.to === "/home").map((item) => {
           const Icon = item.icon;
           const active = activeIs(item.to);
           return (
@@ -178,14 +183,14 @@ export function AppShell({
             </Link>
           );
         })}
-        <button
+        {session ? <button
           onClick={() => setComposerOpen(true)}
           disabled={!me?.username}
           className="rounded-full bg-primary p-3 text-primary-foreground shadow-lg"
           aria-label="New Ship"
         >
           <Plus className="h-5 w-5" />
-        </button>
+        </button> : <Link to="/auth" search={{ next: "/home" }} className="rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">Sign in</Link>}
       </div>
 
       <Dialog open={composerOpen} onOpenChange={setComposerOpen}>
