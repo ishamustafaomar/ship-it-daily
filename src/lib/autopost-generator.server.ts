@@ -191,11 +191,81 @@ async function fetchRecentHistoryBodies(limit = 100): Promise<string[]> {
   return (data ?? []).map((r: any) => r.generated_text as string);
 }
 
-function buildPrompt(cat: Category, band: { label: string; min: number; max: number }, recent: string[]): string {
+export type Persona = {
+  id: string;
+  username: string;
+  display_name: string;
+  bio: string | null;
+  voice: string;
+  weight: number;
+  user_id: string | null;
+};
+
+export async function fetchPersonas(): Promise<Persona[]> {
+  const { data, error } = await supabaseAdmin
+    .from("bot_personas")
+    .select("id, username, display_name, bio, voice, weight, user_id")
+    .eq("enabled", true);
+  if (error) throw error;
+  return (data ?? []) as Persona[];
+}
+
+async function pickPersona(): Promise<Persona | null> {
+  const personas = await fetchPersonas();
+  if (personas.length === 0) return null;
+  return pickWeighted(personas.map((p) => ({ value: p, weight: Number(p.weight) || 1 })));
+}
+
+// Ensure an auth user + profile exists for a persona; returns its uuid.
+export async function ensurePersonaUser(persona: Persona): Promise<string> {
+  if (persona.user_id) return persona.user_id;
+
+  const email = `${persona.username}@bots.shippedin.dev`;
+  let userId: string | null = null;
+
+  try {
+    const { data } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 200 });
+    const found = (data?.users ?? []).find((u: any) => (u.email ?? "").toLowerCase() === email);
+    if (found) userId = found.id;
+  } catch (e) {
+    console.warn("[autopost] listUsers failed:", (e as Error).message);
+  }
+
+  if (!userId) {
+    const { data, error } = await supabaseAdmin.auth.admin.createUser({
+      email,
+      email_confirm: true,
+      user_metadata: { full_name: persona.display_name, name: persona.username },
+    });
+    if (error) throw new Error(`Failed to create persona user: ${error.message}`);
+    userId = data.user!.id;
+  }
+
+  await supabaseAdmin.from("profiles").upsert(
+    {
+      id: userId,
+      username: persona.username,
+      display_name: persona.display_name,
+      bio: persona.bio,
+    },
+    { onConflict: "id" },
+  );
+
+  await supabaseAdmin.from("bot_personas").update({ user_id: userId }).eq("id", persona.id);
+  return userId;
+}
+
+function buildPrompt(
+  cat: Category,
+  band: { label: string; min: number; max: number },
+  recent: string[],
+  persona: Persona | null,
+): string {
   const { instruction, postType } = categoryBrief(cat);
   const recentPreview = recent.slice(0, 20).map((t, i) => `${i + 1}. ${t.slice(0, 180)}`).join("\n");
   return `You write a single social feed post for ShippedIn — a community of indie builders who ship things using AI coding tools.
 
+${persona ? `YOU ARE: ${persona.display_name} (@${persona.username}).\nVOICE: ${persona.voice}\nStay in this persona's voice and interests. Do not mention the persona description itself.` : ""}
 CATEGORY: ${cat}
 BRIEF: ${instruction}
 TARGET LENGTH: ${band.min}-${band.max} words (aim near the middle).
