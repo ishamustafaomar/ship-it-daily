@@ -384,7 +384,7 @@ export async function generateAutopost(opts?: { category?: Category }): Promise<
           ).slice(0, 3)
         : [];
 
-      return { category, lengthBand: band.label, prompt, body, post_type, tool_tag, topic_tags };
+      return { category, lengthBand: band.label, prompt, body, post_type, tool_tag, topic_tags, persona };
     } catch (err) {
       lastError = err;
       console.warn(`[autopost] attempt ${attempt + 1} failed:`, (err as Error).message);
