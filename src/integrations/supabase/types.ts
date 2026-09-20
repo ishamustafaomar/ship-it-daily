@@ -24,6 +24,7 @@ export type Database = {
           generated_text: string
           id: string
           length_band: string | null
+          persona_id: string | null
           post_type: string
           prompt: string
           published: boolean
@@ -43,6 +44,7 @@ export type Database = {
           generated_text: string
           id?: string
           length_band?: string | null
+          persona_id?: string | null
           post_type?: string
           prompt: string
           published?: boolean
@@ -62,6 +64,7 @@ export type Database = {
           generated_text?: string
           id?: string
           length_band?: string | null
+          persona_id?: string | null
           post_type?: string
           prompt?: string
           published?: boolean
@@ -73,6 +76,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "autopost_history_persona_id_fkey"
+            columns: ["persona_id"]
+            isOneToOne: false
+            referencedRelation: "bot_personas"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "autopost_history_ship_id_fkey"
             columns: ["ship_id"]
@@ -106,6 +116,45 @@ export type Database = {
           last_run_at?: string | null
           post_hour_utc?: number
           updated_at?: string
+        }
+        Relationships: []
+      }
+      bot_personas: {
+        Row: {
+          bio: string | null
+          created_at: string
+          display_name: string
+          enabled: boolean
+          id: string
+          updated_at: string
+          user_id: string | null
+          username: string
+          voice: string
+          weight: number
+        }
+        Insert: {
+          bio?: string | null
+          created_at?: string
+          display_name: string
+          enabled?: boolean
+          id?: string
+          updated_at?: string
+          user_id?: string | null
+          username: string
+          voice: string
+          weight?: number
+        }
+        Update: {
+          bio?: string | null
+          created_at?: string
+          display_name?: string
+          enabled?: boolean
+          id?: string
+          updated_at?: string
+          user_id?: string | null
+          username?: string
+          voice?: string
+          weight?: number
         }
         Relationships: []
       }

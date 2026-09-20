@@ -191,11 +191,81 @@ async function fetchRecentHistoryBodies(limit = 100): Promise<string[]> {
   return (data ?? []).map((r: any) => r.generated_text as string);
 }
 
-function buildPrompt(cat: Category, band: { label: string; min: number; max: number }, recent: string[]): string {
+export type Persona = {
+  id: string;
+  username: string;
+  display_name: string;
+  bio: string | null;
+  voice: string;
+  weight: number;
+  user_id: string | null;
+};
+
+export async function fetchPersonas(): Promise<Persona[]> {
+  const { data, error } = await supabaseAdmin
+    .from("bot_personas")
+    .select("id, username, display_name, bio, voice, weight, user_id")
+    .eq("enabled", true);
+  if (error) throw error;
+  return (data ?? []) as Persona[];
+}
+
+async function pickPersona(): Promise<Persona | null> {
+  const personas = await fetchPersonas();
+  if (personas.length === 0) return null;
+  return pickWeighted(personas.map((p) => ({ value: p, weight: Number(p.weight) || 1 })));
+}
+
+// Ensure an auth user + profile exists for a persona; returns its uuid.
+export async function ensurePersonaUser(persona: Persona): Promise<string> {
+  if (persona.user_id) return persona.user_id;
+
+  const email = `${persona.username}@bots.shippedin.dev`;
+  let userId: string | null = null;
+
+  try {
+    const { data } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 200 });
+    const found = (data?.users ?? []).find((u: any) => (u.email ?? "").toLowerCase() === email);
+    if (found) userId = found.id;
+  } catch (e) {
+    console.warn("[autopost] listUsers failed:", (e as Error).message);
+  }
+
+  if (!userId) {
+    const { data, error } = await supabaseAdmin.auth.admin.createUser({
+      email,
+      email_confirm: true,
+      user_metadata: { full_name: persona.display_name, name: persona.username },
+    });
+    if (error) throw new Error(`Failed to create persona user: ${error.message}`);
+    userId = data.user!.id;
+  }
+
+  await supabaseAdmin.from("profiles").upsert(
+    {
+      id: userId,
+      username: persona.username,
+      display_name: persona.display_name,
+      bio: persona.bio,
+    },
+    { onConflict: "id" },
+  );
+
+  await supabaseAdmin.from("bot_personas").update({ user_id: userId }).eq("id", persona.id);
+  return userId;
+}
+
+function buildPrompt(
+  cat: Category,
+  band: { label: string; min: number; max: number },
+  recent: string[],
+  persona: Persona | null,
+): string {
   const { instruction, postType } = categoryBrief(cat);
   const recentPreview = recent.slice(0, 20).map((t, i) => `${i + 1}. ${t.slice(0, 180)}`).join("\n");
   return `You write a single social feed post for ShippedIn — a community of indie builders who ship things using AI coding tools.
 
+${persona ? `YOU ARE: ${persona.display_name} (@${persona.username}).\nVOICE: ${persona.voice}\nStay in this persona's voice and interests. Do not mention the persona description itself.` : ""}
 CATEGORY: ${cat}
 BRIEF: ${instruction}
 TARGET LENGTH: ${band.min}-${band.max} words (aim near the middle).
@@ -233,6 +303,7 @@ export type GeneratedPost = {
   post_type: "ship" | "ask" | "feedback" | "discussion";
   tool_tag: string | null;
   topic_tags: string[];
+  persona: Persona | null;
 };
 
 async function callGateway(prompt: string): Promise<string> {
@@ -281,11 +352,12 @@ export async function generateAutopost(opts?: { category?: Category }): Promise<
   const category = opts?.category ?? pickWeighted(CATEGORY_WEIGHTS);
   const band = pickWeighted(LENGTH_BANDS);
   const recent = await fetchRecentHistoryBodies(100);
+  const persona = await pickPersona();
 
   let lastError: unknown;
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
-      const prompt = buildPrompt(category, band, recent);
+      const prompt = buildPrompt(category, band, recent, persona);
       const raw = await callGateway(prompt);
       const parsed = safeParse(raw);
       const body = String(parsed.body ?? "").trim();
@@ -312,7 +384,7 @@ export async function generateAutopost(opts?: { category?: Category }): Promise<
           ).slice(0, 3)
         : [];
 
-      return { category, lengthBand: band.label, prompt, body, post_type, tool_tag, topic_tags };
+      return { category, lengthBand: band.label, prompt, body, post_type, tool_tag, topic_tags, persona };
     } catch (err) {
       lastError = err;
       console.warn(`[autopost] attempt ${attempt + 1} failed:`, (err as Error).message);
@@ -382,7 +454,18 @@ export async function publishGenerated(
   if (hErr || !row) throw new Error("History entry not found");
   if (row.published) throw new Error("Already published");
 
-  const botId = await ensureBotUser();
+  // Author as the persona attached to this draft; fall back to the house account.
+  let botId: string;
+  if (row.persona_id) {
+    const { data: p } = await supabaseAdmin
+      .from("bot_personas")
+      .select("id, username, display_name, bio, voice, weight, user_id")
+      .eq("id", row.persona_id)
+      .maybeSingle();
+    botId = p ? await ensurePersonaUser(p as Persona) : await ensureBotUser();
+  } else {
+    botId = await ensureBotUser();
+  }
 
   const body = (overrides?.body ?? row.generated_text).trim();
   if (!body) throw new Error("Empty body");
@@ -434,6 +517,7 @@ export async function generateAndSaveDraft(scheduledFor?: string): Promise<{ id:
       tool_tag: post.tool_tag,
       topic_tags: post.topic_tags,
       length_band: post.lengthBand,
+      persona_id: post.persona?.id ?? null,
       published: false,
       scheduled_for: scheduledFor ?? null,
     })

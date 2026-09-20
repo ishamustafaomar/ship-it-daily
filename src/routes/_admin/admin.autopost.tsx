@@ -232,6 +232,9 @@ function HistoryRow({ row }: { row: any }) {
         >
           {row.published ? "PUBLISHED" : row.error ? "ERROR" : "DRAFT"}
         </span>
+        {row.bot_personas?.username ? (
+          <span className="font-mono text-foreground">@{row.bot_personas.username}</span>
+        ) : null}
         <span className="font-mono text-muted-foreground">[{row.category}]</span>
         <span className="font-mono text-muted-foreground">{row.post_type}</span>
         {row.tool_tag ? <span className="font-mono text-muted-foreground">[{row.tool_tag}]</span> : null}
