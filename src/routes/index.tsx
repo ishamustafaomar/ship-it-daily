@@ -43,6 +43,12 @@ function Landing() {
           ) : (
             <>
               <Link
+                to="/home"
+                className="rounded-md px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground"
+              >
+                Browse feed
+              </Link>
+              <Link
                 to="/auth"
                 className="rounded-md px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground"
               >
