@@ -357,7 +357,7 @@ export async function generateAutopost(opts?: { category?: Category }): Promise<
   let lastError: unknown;
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
-      const prompt = buildPrompt(category, band, recent);
+      const prompt = buildPrompt(category, band, recent, persona);
       const raw = await callGateway(prompt);
       const parsed = safeParse(raw);
       const body = String(parsed.body ?? "").trim();
