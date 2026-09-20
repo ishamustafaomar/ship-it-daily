@@ -1,4 +1,4 @@
-import { createFileRoute, useParams, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useParams, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { ArrowLeft, Loader2 } from "lucide-react";
@@ -6,7 +6,8 @@ import { AppShell } from "@/components/AppShell";
 import { RightRail } from "@/components/RightRail";
 import { ShipCard } from "@/components/ShipCard";
 import { Composer } from "@/components/Composer";
-import { getMyProfile, getShipDetail } from "@/lib/api.functions";
+import { getMyProfile, getPublicShipDetail, getShipDetail } from "@/lib/api.functions";
+import { useSession } from "@/hooks/use-session";
 
 export const Route = createFileRoute("/s/$shipId")({
   component: ShipDetail,
@@ -24,14 +25,17 @@ export const Route = createFileRoute("/s/$shipId")({
 });
 
 function ShipDetail() {
-  const { shipId } = useParams({ from: "/_authenticated/s/$shipId" });
+  const { shipId } = useParams({ from: "/s/$shipId" });
+  const { session, loading: sessionLoading } = useSession();
   const navigate = useNavigate();
   const meFn = useServerFn(getMyProfile);
   const fetchFn = useServerFn(getShipDetail);
-  const { data: me } = useQuery({ queryKey: ["me"], queryFn: () => meFn() });
+  const publicFetchFn = useServerFn(getPublicShipDetail);
+  const { data: me } = useQuery({ queryKey: ["me", "ship"], queryFn: () => meFn(), enabled: !!session && !sessionLoading });
   const { data, isLoading } = useQuery({
-    queryKey: ["ship", shipId],
-    queryFn: () => fetchFn({ data: { shipId } }),
+    queryKey: ["ship", shipId, session ? "member" : "guest"],
+    queryFn: () => session ? fetchFn({ data: { shipId } }) : publicFetchFn({ data: { shipId } }),
+    enabled: !sessionLoading,
   });
 
   return (
@@ -64,6 +68,8 @@ function ShipDetail() {
                 placeholder="Post your reply"
               />
             </div>
+          ) : !sessionLoading && !session ? (
+            <div className="border-b border-border/70 px-4 py-4 text-center text-sm"><Link to="/auth" search={{ next: `/s/${shipId}` }} className="font-medium text-primary hover:underline">Sign in to reply</Link></div>
           ) : null}
           {data.replies.map((r) => (
             <ShipCard key={r.id} ship={r} myUserId={me?.id ?? null} />
