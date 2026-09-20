@@ -8,22 +8,20 @@ export const Route = createFileRoute("/welcome")({
   component: Landing,
   head: () => ({
     meta: [
-      { title: "ShippedIn — turn your daily ships into a public track record" },
+      { title: "What is ShippedIn — turn your daily ships into a public track record" },
       { name: "description", content: "A low-pressure build-in-public feed for builders using Lovable, Cursor, Bolt, v0, and Replit. Tag your tools, keep a streak, and get found by builders solving the same problems." },
-      { property: "og:title", content: "ShippedIn — turn your daily ships into a public track record" },
+      { property: "og:title", content: "What is ShippedIn — turn your daily ships into a public track record" },
       { property: "og:description", content: "A low-pressure build-in-public feed for builders using Lovable, Cursor, Bolt, v0, and Replit. Tag your tools, keep a streak, and get found by builders solving the same problems." },
-      { property: "og:url", content: "https://shippedin.dev/" },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://shippedin.dev/welcome" },
+      { name: "twitter:card", content: "summary" },
     ],
-    links: [{ rel: "canonical", href: "https://shippedin.dev/" }],
+    links: [{ rel: "canonical", href: "https://shippedin.dev/welcome" }],
   }),
 });
 
 function Landing() {
-  const { session, loading } = useSession();
-  const navigate = useNavigate();
-  useEffect(() => {
-    if (!loading && session) navigate({ to: "/home", replace: true });
-  }, [session, loading, navigate]);
+  const { session } = useSession();
   const signedIn = !!session;
   return (
     <div className="min-h-screen">
