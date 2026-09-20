@@ -517,6 +517,7 @@ export async function generateAndSaveDraft(scheduledFor?: string): Promise<{ id:
       tool_tag: post.tool_tag,
       topic_tags: post.topic_tags,
       length_band: post.lengthBand,
+      persona_id: post.persona?.id ?? null,
       published: false,
       scheduled_for: scheduledFor ?? null,
     })
