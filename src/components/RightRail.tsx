@@ -2,15 +2,22 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Link } from "@tanstack/react-router";
 import { Flame, TrendingUp } from "lucide-react";
-import { getRightRail, toggleFollow } from "@/lib/api.functions";
+import { getPublicRightRail, getRightRail, toggleFollow } from "@/lib/api.functions";
 import { UserAvatar } from "./UserAvatar";
 import { Button } from "@/components/ui/button";
+import { useSession } from "@/hooks/use-session";
 
 export function RightRail() {
+  const { session, loading } = useSession();
   const qc = useQueryClient();
   const fn = useServerFn(getRightRail);
+  const publicFn = useServerFn(getPublicRightRail);
   const followFn = useServerFn(toggleFollow);
-  const { data } = useQuery({ queryKey: ["rightRail"], queryFn: () => fn() });
+  const { data } = useQuery({
+    queryKey: ["rightRail", session ? "member" : "guest"],
+    queryFn: () => session ? fn() : publicFn(),
+    enabled: !loading,
+  });
 
   const follow = useMutation({
     mutationFn: async (profileId: string) =>
@@ -23,7 +30,7 @@ export function RightRail() {
 
   return (
     <div className="space-y-4">
-      <section className="rounded-xl border border-border bg-card p-4">
+      {session ? <section className="rounded-xl border border-border bg-card p-4">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-semibold text-muted-foreground">Your streak</h3>
           <Flame className={`h-4 w-4 ${streak > 0 ? "text-primary" : "text-muted-foreground"}`} />
@@ -35,7 +42,7 @@ export function RightRail() {
         <p className="mt-1 font-mono text-xs text-muted-foreground">
           longest: {longest} · ship today to keep it alive
         </p>
-      </section>
+      </section> : null}
 
       <section className="rounded-xl border border-border bg-card p-4">
         <h3 className="mb-3 text-sm font-semibold text-muted-foreground">Builders to follow</h3>
@@ -60,7 +67,7 @@ export function RightRail() {
                   @{p.username} · {p.streak_count}🔥
                 </p>
               </div>
-              <Button
+               {session ? <Button
                 size="sm"
                 variant="secondary"
                 className="h-7 px-3 text-xs"
@@ -68,7 +75,7 @@ export function RightRail() {
                 disabled={follow.isPending}
               >
                 Follow
-              </Button>
+               </Button> : <Link to="/auth" search={{ next: "/home" }} className="text-xs font-medium text-primary hover:underline">Follow</Link>}
             </div>
           ))}
         </div>

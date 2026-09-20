@@ -17,11 +17,14 @@ import { Button } from "@/components/ui/button";
 import { Link } from "@tanstack/react-router";
 import {
   getFeed,
+  getPublicFeed,
   getMyProfile,
   getRightRail,
   toggleFollow,
   updateMyProfile,
+  type FeedShip,
 } from "@/lib/api.functions";
+import { useSession } from "@/hooks/use-session";
 
 const searchSchema = z.object({
   tab: fallback(z.enum(["following", "for_you", "relevant"]), "for_you").default("for_you"),
@@ -29,7 +32,7 @@ const searchSchema = z.object({
   tool: fallback(z.string(), "").default(""),
 });
 
-export const Route = createFileRoute("/_authenticated/home")({
+export const Route = createFileRoute("/home")({
   component: HomePage,
   validateSearch: zodValidator(searchSchema),
   head: () => ({
@@ -38,14 +41,16 @@ export const Route = createFileRoute("/_authenticated/home")({
       { name: "description", content: "Your daily ShippedIn feed. See what builders you follow shipped today and post your own update." },
       { property: "og:title", content: "Home feed — ShippedIn" },
       { property: "og:description", content: "Your following and For You feed of daily builder ships." },
+      { property: "og:type", content: "website" },
       { property: "og:url", content: "https://shippedin.dev/home" },
-      { name: "robots", content: "noindex" },
+      { name: "twitter:card", content: "summary" },
     ],
     links: [{ rel: "canonical", href: "https://shippedin.dev/home" }],
   }),
 });
 
 function HomePage() {
+  const { session, loading: sessionLoading } = useSession();
   const navigate = useNavigate();
   const { tab, tag, tool } = Route.useSearch();
   const activeTag = tag.trim();
@@ -53,9 +58,11 @@ function HomePage() {
   const activeTab = activeTag || activeTool ? "for_you" : tab;
   const meFn = useServerFn(getMyProfile);
   const feedFn = useServerFn(getFeed);
+  const publicFeedFn = useServerFn(getPublicFeed);
   const { data: me, isFetching: meFetching } = useQuery({
-    queryKey: ["me"],
+    queryKey: ["me", "home"],
     queryFn: () => meFn(),
+    enabled: !!session && !sessionLoading,
   });
 
   useEffect(() => {
@@ -64,20 +71,18 @@ function HomePage() {
     if (me && !me.username && !meFetching) navigate({ to: "/onboarding" });
   }, [me, meFetching, navigate]);
 
-  const feed = useInfiniteQuery({
-    queryKey: ["feed", activeTab, activeTag, activeTool],
-    queryFn: ({ pageParam }) =>
-      feedFn({
-        data: {
+  const feed = useInfiniteQuery<{ items: FeedShip[]; nextCursor: string | null; needsFocus: boolean }>({
+    queryKey: ["feed", session ? "member" : "guest", activeTab, activeTag, activeTool],
+    queryFn: async ({ pageParam }) =>
+      session ? feedFn({ data: {
           tab: activeTab,
           cursor: pageParam as string | null,
           tag: activeTag || null,
           tool: activeTool || null,
-        },
-      }),
+        } }) : publicFeedFn({ data: { cursor: pageParam as string | null, tag: activeTag || null, tool: activeTool || null } }),
     initialPageParam: null as string | null,
     getNextPageParam: (last) => last.nextCursor,
-    enabled: !!me?.username,
+    enabled: !sessionLoading && (!session || !!me?.username),
   });
 
   const items = feed.data?.pages.flatMap((p) => p.items) ?? [];
@@ -87,7 +92,7 @@ function HomePage() {
     <AppShell right={<RightRail />}>
       <div className="border-b border-border/70">
         <div className="flex">
-          {(["following", "for_you", "relevant"] as const).map((t) => (
+          {(session ? ["following", "for_you", "relevant"] as const : ["for_you"] as const).map((t) => (
             <button
               key={t}
               onClick={() => navigate({ to: "/home", search: { tab: t, tag: "", tool: "" } })}
@@ -119,6 +124,8 @@ function HomePage() {
             <X className="h-3 w-3" /> clear
           </button>
         </div>
+      ) : !sessionLoading && !session ? (
+        <div className="border-b border-border/70 px-4 py-3"><Link to="/auth" search={{ next: "/home" }} className="block rounded-md border border-border bg-secondary/40 px-4 py-3 text-center text-sm font-medium text-primary hover:bg-secondary">Sign in to post or join the conversation</Link></div>
       ) : null}
 
       {me?.username ? (

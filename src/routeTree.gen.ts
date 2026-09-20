@@ -13,22 +13,22 @@ import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as McpRouteImport } from './routes/mcp'
+import { Route as HomeRouteImport } from './routes/home'
 import { Route as ConnectRouteImport } from './routes/connect'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AdminRouteRouteImport } from './routes/_admin/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as UUsernameRouteImport } from './routes/u.$username'
+import { Route as SShipIdRouteImport } from './routes/s.$shipId'
 import { Route as BlogBuildingInPublicWithAiRouteImport } from './routes/blog.building-in-public-with-ai'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
-import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
 import { Route as AuthenticatedExploreRouteImport } from './routes/_authenticated/explore'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as AdminAdminIndexRouteImport } from './routes/_admin/admin.index'
-import { Route as AuthenticatedSShipIdRouteImport } from './routes/_authenticated/s.$shipId'
 import { Route as AdminAdminUsersRouteImport } from './routes/_admin/admin.users'
 import { Route as AdminAdminShipsRouteImport } from './routes/_admin/admin.ships'
 import { Route as AdminAdminReportsRouteImport } from './routes/_admin/admin.reports'
@@ -59,6 +59,11 @@ const McpRoute = McpRouteImport.update({
   path: '/mcp',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HomeRoute = HomeRouteImport.update({
+  id: '/home',
+  path: '/home',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ConnectRoute = ConnectRouteImport.update({
   id: '/connect',
   path: '/connect',
@@ -87,6 +92,11 @@ const UUsernameRoute = UUsernameRouteImport.update({
   path: '/u/$username',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SShipIdRoute = SShipIdRouteImport.update({
+  id: '/s/$shipId',
+  path: '/s/$shipId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BlogBuildingInPublicWithAiRoute =
   BlogBuildingInPublicWithAiRouteImport.update({
     id: '/blog/building-in-public-with-ai',
@@ -109,11 +119,6 @@ const AuthenticatedNotificationsRoute =
     path: '/notifications',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedHomeRoute = AuthenticatedHomeRouteImport.update({
-  id: '/home',
-  path: '/home',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedExploreRoute = AuthenticatedExploreRouteImport.update({
   id: '/explore',
   path: '/explore',
@@ -135,11 +140,6 @@ const AdminAdminIndexRoute = AdminAdminIndexRouteImport.update({
   id: '/admin/',
   path: '/admin/',
   getParentRoute: () => AdminRouteRoute,
-} as any)
-const AuthenticatedSShipIdRoute = AuthenticatedSShipIdRouteImport.update({
-  id: '/s/$shipId',
-  path: '/s/$shipId',
-  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AdminAdminUsersRoute = AdminAdminUsersRouteImport.update({
   id: '/admin/users',
@@ -192,6 +192,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/connect': typeof ConnectRoute
+  '/home': typeof HomeRoute
   '/mcp': typeof McpRoute
   '/privacy': typeof PrivacyRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -199,11 +200,11 @@ export interface FileRoutesByFullPath {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/explore': typeof AuthenticatedExploreRoute
-  '/home': typeof AuthenticatedHomeRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/blog/building-in-public-with-ai': typeof BlogBuildingInPublicWithAiRoute
+  '/s/$shipId': typeof SShipIdRoute
   '/u/$username': typeof UUsernameRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -212,7 +213,6 @@ export interface FileRoutesByFullPath {
   '/admin/reports': typeof AdminAdminReportsRoute
   '/admin/ships': typeof AdminAdminShipsRoute
   '/admin/users': typeof AdminAdminUsersRouteWithChildren
-  '/s/$shipId': typeof AuthenticatedSShipIdRoute
   '/admin/': typeof AdminAdminIndexRoute
   '/admin/users/$id': typeof AdminAdminUsersIdRoute
   '/api/public/hooks/autopost': typeof ApiPublicHooksAutopostRoute
@@ -221,6 +221,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/connect': typeof ConnectRoute
+  '/home': typeof HomeRoute
   '/mcp': typeof McpRoute
   '/privacy': typeof PrivacyRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -228,11 +229,11 @@ export interface FileRoutesByTo {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/explore': typeof AuthenticatedExploreRoute
-  '/home': typeof AuthenticatedHomeRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/blog/building-in-public-with-ai': typeof BlogBuildingInPublicWithAiRoute
+  '/s/$shipId': typeof SShipIdRoute
   '/u/$username': typeof UUsernameRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -241,7 +242,6 @@ export interface FileRoutesByTo {
   '/admin/reports': typeof AdminAdminReportsRoute
   '/admin/ships': typeof AdminAdminShipsRoute
   '/admin/users': typeof AdminAdminUsersRouteWithChildren
-  '/s/$shipId': typeof AuthenticatedSShipIdRoute
   '/admin': typeof AdminAdminIndexRoute
   '/admin/users/$id': typeof AdminAdminUsersIdRoute
   '/api/public/hooks/autopost': typeof ApiPublicHooksAutopostRoute
@@ -253,6 +253,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/connect': typeof ConnectRoute
+  '/home': typeof HomeRoute
   '/mcp': typeof McpRoute
   '/privacy': typeof PrivacyRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -260,11 +261,11 @@ export interface FileRoutesById {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/_authenticated/explore': typeof AuthenticatedExploreRoute
-  '/_authenticated/home': typeof AuthenticatedHomeRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/blog/building-in-public-with-ai': typeof BlogBuildingInPublicWithAiRoute
+  '/s/$shipId': typeof SShipIdRoute
   '/u/$username': typeof UUsernameRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -273,7 +274,6 @@ export interface FileRoutesById {
   '/_admin/admin/reports': typeof AdminAdminReportsRoute
   '/_admin/admin/ships': typeof AdminAdminShipsRoute
   '/_admin/admin/users': typeof AdminAdminUsersRouteWithChildren
-  '/_authenticated/s/$shipId': typeof AuthenticatedSShipIdRoute
   '/_admin/admin/': typeof AdminAdminIndexRoute
   '/_admin/admin/users/$id': typeof AdminAdminUsersIdRoute
   '/api/public/hooks/autopost': typeof ApiPublicHooksAutopostRoute
@@ -284,6 +284,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/connect'
+    | '/home'
     | '/mcp'
     | '/privacy'
     | '/sitemap.xml'
@@ -291,11 +292,11 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/explore'
-    | '/home'
     | '/notifications'
     | '/onboarding'
     | '/profile'
     | '/blog/building-in-public-with-ai'
+    | '/s/$shipId'
     | '/u/$username'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
@@ -304,7 +305,6 @@ export interface FileRouteTypes {
     | '/admin/reports'
     | '/admin/ships'
     | '/admin/users'
-    | '/s/$shipId'
     | '/admin/'
     | '/admin/users/$id'
     | '/api/public/hooks/autopost'
@@ -313,6 +313,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/connect'
+    | '/home'
     | '/mcp'
     | '/privacy'
     | '/sitemap.xml'
@@ -320,11 +321,11 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/explore'
-    | '/home'
     | '/notifications'
     | '/onboarding'
     | '/profile'
     | '/blog/building-in-public-with-ai'
+    | '/s/$shipId'
     | '/u/$username'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
@@ -333,7 +334,6 @@ export interface FileRouteTypes {
     | '/admin/reports'
     | '/admin/ships'
     | '/admin/users'
-    | '/s/$shipId'
     | '/admin'
     | '/admin/users/$id'
     | '/api/public/hooks/autopost'
@@ -344,6 +344,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/connect'
+    | '/home'
     | '/mcp'
     | '/privacy'
     | '/sitemap.xml'
@@ -351,11 +352,11 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/_authenticated/explore'
-    | '/_authenticated/home'
     | '/_authenticated/notifications'
     | '/_authenticated/onboarding'
     | '/_authenticated/profile'
     | '/blog/building-in-public-with-ai'
+    | '/s/$shipId'
     | '/u/$username'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
@@ -364,7 +365,6 @@ export interface FileRouteTypes {
     | '/_admin/admin/reports'
     | '/_admin/admin/ships'
     | '/_admin/admin/users'
-    | '/_authenticated/s/$shipId'
     | '/_admin/admin/'
     | '/_admin/admin/users/$id'
     | '/api/public/hooks/autopost'
@@ -376,6 +376,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   ConnectRoute: typeof ConnectRoute
+  HomeRoute: typeof HomeRoute
   McpRoute: typeof McpRoute
   PrivacyRoute: typeof PrivacyRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -383,6 +384,7 @@ export interface RootRouteChildren {
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   BlogBuildingInPublicWithAiRoute: typeof BlogBuildingInPublicWithAiRoute
+  SShipIdRoute: typeof SShipIdRoute
   UUsernameRoute: typeof UUsernameRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -417,6 +419,13 @@ declare module '@tanstack/react-router' {
       path: '/mcp'
       fullPath: '/mcp'
       preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/home': {
+      id: '/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof HomeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/connect': {
@@ -461,6 +470,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UUsernameRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/s/$shipId': {
+      id: '/s/$shipId'
+      path: '/s/$shipId'
+      fullPath: '/s/$shipId'
+      preLoaderRoute: typeof SShipIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/blog/building-in-public-with-ai': {
       id: '/blog/building-in-public-with-ai'
       path: '/blog/building-in-public-with-ai'
@@ -487,13 +503,6 @@ declare module '@tanstack/react-router' {
       path: '/notifications'
       fullPath: '/notifications'
       preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/home': {
-      id: '/_authenticated/home'
-      path: '/home'
-      fullPath: '/home'
-      preLoaderRoute: typeof AuthenticatedHomeRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/explore': {
@@ -523,13 +532,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/'
       preLoaderRoute: typeof AdminAdminIndexRouteImport
       parentRoute: typeof AdminRouteRoute
-    }
-    '/_authenticated/s/$shipId': {
-      id: '/_authenticated/s/$shipId'
-      path: '/s/$shipId'
-      fullPath: '/s/$shipId'
-      preLoaderRoute: typeof AuthenticatedSShipIdRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_admin/admin/users': {
       id: '/_admin/admin/users'
@@ -633,20 +635,16 @@ const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedExploreRoute: typeof AuthenticatedExploreRoute
-  AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
-  AuthenticatedSShipIdRoute: typeof AuthenticatedSShipIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedExploreRoute: AuthenticatedExploreRoute,
-  AuthenticatedHomeRoute: AuthenticatedHomeRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
-  AuthenticatedSShipIdRoute: AuthenticatedSShipIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -658,6 +656,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   ConnectRoute: ConnectRoute,
+  HomeRoute: HomeRoute,
   McpRoute: McpRoute,
   PrivacyRoute: PrivacyRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
@@ -666,6 +665,7 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   BlogBuildingInPublicWithAiRoute: BlogBuildingInPublicWithAiRoute,
+  SShipIdRoute: SShipIdRoute,
   UUsernameRoute: UUsernameRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,

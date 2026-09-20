@@ -483,6 +483,21 @@ export const getFeed = createServerFn({ method: "GET" })
     };
   });
 
+export const getPublicFeed = createServerFn({ method: "GET" })
+  .inputValidator((d) => z.object({ cursor: z.string().nullable().optional(), limit: z.number().min(1).max(50).optional(), tag: z.string().nullable().optional(), tool: z.string().nullable().optional() }).parse(d ?? {}))
+  .handler(async ({ data }) => {
+    const supabase = createAnonSupabase();
+    const limit = data.limit ?? 20;
+    let query = supabase.from("ships").select("*").is("parent_ship_id", null).order("created_at", { ascending: false }).limit(limit + 1);
+    if (data.cursor) query = query.lt("created_at", data.cursor);
+    if (data.tag) { const tag = normalizeTag(data.tag); if (tag) query = query.contains("topic_tags", [tag]); }
+    if (data.tool) query = query.eq("tool_tag", data.tool);
+    const { data: rows, error } = await query;
+    if (error) throw error;
+    const slice = (rows ?? []).slice(0, limit);
+    return { items: await decorateShips(supabase, ANON_UUID, slice), nextCursor: (rows?.length ?? 0) > limit ? slice[slice.length - 1].created_at : null, needsFocus: false };
+  });
+
 // ============= Ship detail =============
 export const getShipDetail = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -503,6 +518,19 @@ export const getShipDetail = createServerFn({ method: "GET" })
       .order("created_at", { ascending: true });
     const decoratedReplies = await decorateShips(context.supabase, context.userId, replies ?? []);
     return { ship: decoratedParent, replies: decoratedReplies };
+  });
+
+export const getPublicShipDetail = createServerFn({ method: "GET" })
+  .inputValidator((d) => z.object({ shipId: z.string().uuid() }).parse(d))
+  .handler(async ({ data }) => {
+    const supabase = createAnonSupabase();
+    const { data: row, error } = await supabase.from("ships").select("*").eq("id", data.shipId).maybeSingle();
+    if (error) throw error;
+    if (!row) return null;
+    const [ship] = await decorateShips(supabase, ANON_UUID, [row]);
+    const { data: replies, error: repliesError } = await supabase.from("ships").select("*").eq("parent_ship_id", data.shipId).order("created_at", { ascending: true });
+    if (repliesError) throw repliesError;
+    return { ship, replies: await decorateShips(supabase, ANON_UUID, replies ?? []) };
   });
 
 // ============= Create ship =============
@@ -726,6 +754,34 @@ export const getRightRail = createServerFn({ method: "GET" })
       .map(([tag, count]) => ({ tag, count }));
 
     return { me: meRes.data, suggestions, trending };
+  });
+
+export const getPublicRightRail = createServerFn({ method: "GET" })
+  .handler(async () => {
+    const supabase = createAnonSupabase();
+    const [profilesRes, recentShipsRes] = await Promise.all([
+      supabase.from("profiles")
+        .select("id, username, display_name, avatar_url, building_now, streak_count")
+        .not("username", "is", null)
+        .order("streak_count", { ascending: false })
+        .limit(5),
+      supabase.from("ships")
+        .select("tool_tag, created_at")
+        .gte("created_at", new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString())
+        .not("tool_tag", "is", null),
+    ]);
+    const toolCounts: Record<string, number> = {};
+    (recentShipsRes.data ?? []).forEach((row: any) => {
+      if (row.tool_tag) toolCounts[row.tool_tag] = (toolCounts[row.tool_tag] ?? 0) + 1;
+    });
+    return {
+      me: null,
+      suggestions: profilesRes.data ?? [],
+      trending: Object.entries(toolCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5)
+        .map(([tag, count]) => ({ tag, count })),
+    };
   });
 
 // ============= Topic tag suggestions (for composer autocomplete) =============

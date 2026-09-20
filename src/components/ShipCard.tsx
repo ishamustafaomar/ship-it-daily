@@ -204,14 +204,12 @@ export function ShipCard({
             </div>
           </div>
 
-          <Link
-            to="/s/$shipId"
-            params={{ shipId: ship.id }}
-            className="block"
-          >
+          <div>
+            <Link to="/s/$shipId" params={{ shipId: ship.id }} className="block">
             <p className="mt-1 whitespace-pre-wrap text-[15px] leading-snug text-foreground">
               {ship.body}
             </p>
+            </Link>
             {ship.link_url ? (
               <a
                 href={ship.link_url}
@@ -225,11 +223,11 @@ export function ShipCard({
               </a>
             ) : null}
             {ship.image_signed_url ? (
-              <div className="mt-2 overflow-hidden rounded-lg border border-border">
+              <Link to="/s/$shipId" params={{ shipId: ship.id }} className="mt-2 block overflow-hidden rounded-lg border border-border">
                 <img src={ship.image_signed_url} alt="" className="max-h-[420px] w-full object-cover" />
-              </div>
+              </Link>
             ) : null}
-          </Link>
+          </div>
 
           {ship.topic_tags && ship.topic_tags.length > 0 ? (
             <div className="mt-2 flex flex-wrap gap-1.5">
@@ -336,10 +334,10 @@ export function ShipCard({
             </div>
             ) : (
               <div className="mt-3 flex items-center gap-6 text-muted-foreground">
-                <span className="inline-flex items-center gap-1.5 text-xs">
+                <Link to="/s/$shipId" params={{ shipId: ship.id }} className="inline-flex items-center gap-1.5 text-xs hover:text-primary">
                   <MessageCircle className="h-4 w-4" />
                   <span className="font-mono">{nf(ship.reply_count)}</span>
-                </span>
+                </Link>
                 <span className="inline-flex items-center gap-1.5 text-xs">
                   <Repeat2 className="h-4 w-4" />
                   <span className="font-mono">{nf(ship.reship_count)}</span>
@@ -350,6 +348,7 @@ export function ShipCard({
                 </span>
                 <Link
                   to="/auth"
+                  search={{ next: `/s/${ship.id}` }}
                   className="ml-auto font-mono text-[11px] text-primary hover:underline"
                 >
                   Sign in to react
