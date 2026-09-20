@@ -303,6 +303,7 @@ export type GeneratedPost = {
   post_type: "ship" | "ask" | "feedback" | "discussion";
   tool_tag: string | null;
   topic_tags: string[];
+  persona: Persona | null;
 };
 
 async function callGateway(prompt: string): Promise<string> {
