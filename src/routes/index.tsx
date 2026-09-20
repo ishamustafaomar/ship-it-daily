@@ -43,6 +43,12 @@ function Landing() {
           ) : (
             <>
               <Link
+                to="/home"
+                className="rounded-md px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground"
+              >
+                Browse feed
+              </Link>
+              <Link
                 to="/auth"
                 className="rounded-md px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground"
               >
@@ -80,6 +86,14 @@ function Landing() {
           >
             {signedIn ? "Open app" : "Start your streak"}
           </Link>
+          {signedIn ? null : (
+            <Link
+              to="/home"
+              className="rounded-md border border-border px-5 py-2.5 text-sm font-semibold text-foreground hover:bg-secondary"
+            >
+              Browse the feed — no account needed
+            </Link>
+          )}
         </div>
 
         <section aria-labelledby="why-shippedin" className="mt-20 text-left">
