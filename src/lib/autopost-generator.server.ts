@@ -352,6 +352,7 @@ export async function generateAutopost(opts?: { category?: Category }): Promise<
   const category = opts?.category ?? pickWeighted(CATEGORY_WEIGHTS);
   const band = pickWeighted(LENGTH_BANDS);
   const recent = await fetchRecentHistoryBodies(100);
+  const persona = await pickPersona();
 
   let lastError: unknown;
   for (let attempt = 0; attempt < 3; attempt++) {
