@@ -756,6 +756,34 @@ export const getRightRail = createServerFn({ method: "GET" })
     return { me: meRes.data, suggestions, trending };
   });
 
+export const getPublicRightRail = createServerFn({ method: "GET" })
+  .handler(async () => {
+    const supabase = createAnonSupabase();
+    const [profilesRes, recentShipsRes] = await Promise.all([
+      supabase.from("profiles")
+        .select("id, username, display_name, avatar_url, building_now, streak_count")
+        .not("username", "is", null)
+        .order("streak_count", { ascending: false })
+        .limit(5),
+      supabase.from("ships")
+        .select("tool_tag, created_at")
+        .gte("created_at", new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString())
+        .not("tool_tag", "is", null),
+    ]);
+    const toolCounts: Record<string, number> = {};
+    (recentShipsRes.data ?? []).forEach((row: any) => {
+      if (row.tool_tag) toolCounts[row.tool_tag] = (toolCounts[row.tool_tag] ?? 0) + 1;
+    });
+    return {
+      me: null,
+      suggestions: profilesRes.data ?? [],
+      trending: Object.entries(toolCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5)
+        .map(([tag, count]) => ({ tag, count })),
+    };
+  });
+
 // ============= Topic tag suggestions (for composer autocomplete) =============
 export const getTagSuggestions = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
