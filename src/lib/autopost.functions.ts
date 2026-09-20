@@ -61,7 +61,7 @@ export const listAutopostHistory = createServerFn({ method: "GET" })
     const { data: rows, error } = await supabaseAdmin
       .from("autopost_history")
       .select(
-        "id, generated_at, category, generated_text, post_type, tool_tag, topic_tags, length_band, ship_id, published, published_at, scheduled_for, attempts, error",
+        "id, generated_at, category, generated_text, post_type, tool_tag, topic_tags, length_band, ship_id, published, published_at, scheduled_for, attempts, error, persona_id, bot_personas(username, display_name)",
       )
       .order("generated_at", { ascending: false })
       .limit(data.limit);
