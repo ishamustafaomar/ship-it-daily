@@ -19,10 +19,16 @@ export const Route = createFileRoute("/api/public/hooks/autopost")({
       },
       POST: async ({ request }) => {
         try {
-          const expected = process.env.CRON_SECRET;
-          if (!expected) {
+          const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+          const { data: schedulerCredential, error: credentialError } = await supabaseAdmin
+            .from("autopost_scheduler_credentials")
+            .select("token")
+            .eq("id", 1)
+            .maybeSingle();
+          if (credentialError || !schedulerCredential?.token) {
             return json({ ok: false, error: "server not configured" }, 500);
           }
+          const expected = schedulerCredential.token;
           const auth = request.headers.get("authorization") ?? "";
           const bearer = auth.toLowerCase().startsWith("bearer ")
             ? auth.slice(7).trim()
@@ -35,7 +41,6 @@ export const Route = createFileRoute("/api/public/hooks/autopost")({
           const body = await request.json().catch(() => ({}));
           const force = !!body?.force;
 
-          const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
           const { data: settings, error: sErr } = await supabaseAdmin
             .from("autopost_settings")
             .select("*")
