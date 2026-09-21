@@ -92,6 +92,27 @@ export type Database = {
           },
         ]
       }
+      autopost_scheduler_credentials: {
+        Row: {
+          created_at: string
+          id: number
+          token: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          token: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          token?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       autopost_settings: {
         Row: {
           bot_user_id: string | null

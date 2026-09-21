@@ -306,32 +306,86 @@ export type GeneratedPost = {
   persona: Persona | null;
 };
 
-async function callGateway(prompt: string): Promise<string> {
-  const key = process.env.LOVABLE_API_KEY;
-  if (!key) throw new Error("Missing LOVABLE_API_KEY");
-  const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${key}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: "google/gemini-3-flash-preview",
-      response_format: { type: "json_object" },
-      messages: [
-        { role: "system", content: "You output only strict JSON matching the requested schema." },
-        { role: "user", content: prompt },
-      ],
-    }),
-  });
-  if (!res.ok) {
-    const txt = await res.text();
-    throw new Error(`AI Gateway ${res.status}: ${txt.slice(0, 400)}`);
+class GatewayError extends Error {
+  constructor(
+    message: string,
+    readonly retryable: boolean,
+  ) {
+    super(message);
   }
-  const json: any = await res.json();
-  const content = json?.choices?.[0]?.message?.content;
-  if (!content || typeof content !== "string") throw new Error("Empty AI response");
-  return content;
+}
+
+function readResponsesText(sse: string): string {
+  let output = "";
+  let reasoning = "";
+  for (const line of sse.split("\n")) {
+    if (!line.startsWith("data: ")) continue;
+    const payload = line.slice(6).trim();
+    if (!payload || payload === "[DONE]") continue;
+    try {
+      const event = JSON.parse(payload) as {
+        type?: string;
+        delta?: string;
+        response?: { output_text?: string };
+      };
+      if (event.type === "response.output_text.delta" && typeof event.delta === "string") {
+        output += event.delta;
+      } else if (
+        event.type === "response.reasoning_summary_text.delta" &&
+        typeof event.delta === "string"
+      ) {
+        reasoning += event.delta;
+      } else if (event.type === "response.completed" && !output && event.response?.output_text) {
+        output = event.response.output_text;
+      }
+    } catch {
+      // Ignore keepalive and non-JSON SSE lines.
+    }
+  }
+  return output || reasoning;
+}
+
+async function callGateway(prompt: string): Promise<string> {
+  const key = process.env["LOVABLE_API_KEY"];
+  if (!key) throw new Error("Missing LOVABLE_API_KEY");
+  for (let requestAttempt = 0; requestAttempt < 3; requestAttempt++) {
+    const res = await fetch("https://ai.gateway.lovable.dev/v1/responses", {
+      method: "POST",
+      headers: {
+        "Lovable-API-Key": key,
+        "X-Lovable-AIG-SDK": "fetch",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "openai/gpt-6-astra",
+        input: [
+          { role: "developer", content: "Return only strict JSON matching the requested schema." },
+          { role: "user", content: prompt },
+        ],
+        stream: true,
+        store: false,
+        reasoning: { effort: "medium", summary: "auto" },
+        include: ["reasoning.encrypted_content"],
+      }),
+    });
+    if (res.ok) {
+      const content = readResponsesText(await res.text());
+      if (!content) throw new Error("Empty AI response");
+      return content;
+    }
+
+    const txt = await res.text();
+    const retryable = res.status === 429 || res.status >= 500;
+    if (!retryable || requestAttempt === 2) {
+      throw new GatewayError(`AI Gateway ${res.status}: ${txt.slice(0, 400)}`, retryable);
+    }
+    const retryAfter = Number(res.headers.get("Retry-After"));
+    const delay = Number.isFinite(retryAfter) && retryAfter > 0
+      ? retryAfter * 1_000
+      : 750 * 2 ** requestAttempt + Math.floor(Math.random() * 250);
+    await new Promise((resolve) => setTimeout(resolve, delay));
+  }
+  throw new Error("AI Gateway request failed");
 }
 
 function safeParse(raw: string): any {
@@ -388,6 +442,7 @@ export async function generateAutopost(opts?: { category?: Category }): Promise<
     } catch (err) {
       lastError = err;
       console.warn(`[autopost] attempt ${attempt + 1} failed:`, (err as Error).message);
+      if (err instanceof GatewayError && !err.retryable) throw err;
     }
   }
   throw new Error(`Generation failed after 3 attempts: ${(lastError as Error)?.message ?? "unknown"}`);
