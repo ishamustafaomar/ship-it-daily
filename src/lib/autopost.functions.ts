@@ -46,6 +46,12 @@ export const updateAutopostSettings = createServerFn({ method: "POST" })
       .select()
       .maybeSingle();
     if (error) throw error;
+    if (typeof data.post_hour_utc === "number") {
+      const { error: rErr } = await (supabaseAdmin as any).rpc("reschedule_autopost", {
+        _hour: data.post_hour_utc,
+      });
+      if (rErr) throw rErr;
+    }
     return row;
   });
 

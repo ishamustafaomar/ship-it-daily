@@ -544,6 +544,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      reschedule_autopost: { Args: { _hour: number }; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
