@@ -38,6 +38,7 @@ import { Route as AdminAdminReportsRouteImport } from './routes/_admin/admin.rep
 import { Route as AdminAdminShipsRouteImport } from './routes/_admin/admin.ships'
 import { Route as AdminAdminUsersRouteImport } from './routes/_admin/admin.users'
 import { Route as AdminAdminUsersIdRouteImport } from './routes/_admin/admin.users.$id'
+import { Route as ApiPublicBadgeUsernameRouteImport } from './routes/api/public/badge.$username'
 import { Route as ApiPublicHooksAutopostRouteImport } from './routes/api/public/hooks/autopost'
 
 const IndexRoute = IndexRouteImport.update({
@@ -188,6 +189,11 @@ const AdminAdminUsersIdRoute = AdminAdminUsersIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => AdminAdminUsersRoute,
 } as any)
+const ApiPublicBadgeUsernameRoute = ApiPublicBadgeUsernameRouteImport.update({
+  id: '/api/public/badge/$username',
+  path: '/api/public/badge/$username',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicHooksAutopostRoute = ApiPublicHooksAutopostRouteImport.update({
   id: '/api/public/hooks/autopost',
   path: '/api/public/hooks/autopost',
@@ -222,6 +228,7 @@ export interface FileRoutesByFullPath {
   '/admin/users': typeof AdminAdminUsersRouteWithChildren
   '/admin/': typeof AdminAdminIndexRoute
   '/admin/users/$id': typeof AdminAdminUsersIdRoute
+  '/api/public/badge/$username': typeof ApiPublicBadgeUsernameRoute
   '/api/public/hooks/autopost': typeof ApiPublicHooksAutopostRoute
 }
 export interface FileRoutesByTo {
@@ -252,6 +259,7 @@ export interface FileRoutesByTo {
   '/admin/users': typeof AdminAdminUsersRouteWithChildren
   '/admin': typeof AdminAdminIndexRoute
   '/admin/users/$id': typeof AdminAdminUsersIdRoute
+  '/api/public/badge/$username': typeof ApiPublicBadgeUsernameRoute
   '/api/public/hooks/autopost': typeof ApiPublicHooksAutopostRoute
 }
 export interface FileRoutesById {
@@ -285,6 +293,7 @@ export interface FileRoutesById {
   '/_admin/admin/users': typeof AdminAdminUsersRouteWithChildren
   '/_admin/admin/': typeof AdminAdminIndexRoute
   '/_admin/admin/users/$id': typeof AdminAdminUsersIdRoute
+  '/api/public/badge/$username': typeof ApiPublicBadgeUsernameRoute
   '/api/public/hooks/autopost': typeof ApiPublicHooksAutopostRoute
 }
 export interface FileRouteTypes {
@@ -317,6 +326,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/admin/'
     | '/admin/users/$id'
+    | '/api/public/badge/$username'
     | '/api/public/hooks/autopost'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -347,6 +357,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/admin'
     | '/admin/users/$id'
+    | '/api/public/badge/$username'
     | '/api/public/hooks/autopost'
   id:
     | '__root__'
@@ -379,6 +390,7 @@ export interface FileRouteTypes {
     | '/_admin/admin/users'
     | '/_admin/admin/'
     | '/_admin/admin/users/$id'
+    | '/api/public/badge/$username'
     | '/api/public/hooks/autopost'
   fileRoutesById: FileRoutesById
 }
@@ -401,6 +413,7 @@ export interface RootRouteChildren {
   UUsernameRoute: typeof UUsernameRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
+  ApiPublicBadgeUsernameRoute: typeof ApiPublicBadgeUsernameRoute
   ApiPublicHooksAutopostRoute: typeof ApiPublicHooksAutopostRoute
 }
 
@@ -609,6 +622,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAdminUsersIdRouteImport
       parentRoute: typeof AdminAdminUsersRoute
     }
+    '/api/public/badge/$username': {
+      id: '/api/public/badge/$username'
+      path: '/api/public/badge/$username'
+      fullPath: '/api/public/badge/$username'
+      preLoaderRoute: typeof ApiPublicBadgeUsernameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/autopost': {
       id: '/api/public/hooks/autopost'
       path: '/api/public/hooks/autopost'
@@ -690,6 +710,7 @@ const rootRouteChildren: RootRouteChildren = {
   UUsernameRoute: UUsernameRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
+  ApiPublicBadgeUsernameRoute: ApiPublicBadgeUsernameRoute,
   ApiPublicHooksAutopostRoute: ApiPublicHooksAutopostRoute,
 }
 export const routeTree = rootRouteImport
