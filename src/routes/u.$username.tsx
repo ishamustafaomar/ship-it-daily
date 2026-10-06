@@ -124,7 +124,7 @@ function ProfilePage() {
                     <span className="font-mono text-foreground">{data.following}</span> following
                   </span>
                   <ShareStreakDialog
-                    username={data.profile.username}
+                    username={data.profile.username ?? username}
                     streak={data.profile.streak_count ?? 0}
                     longest={(data.profile as any).longest_streak ?? 0}
                   />
