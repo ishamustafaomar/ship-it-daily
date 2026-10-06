@@ -123,6 +123,11 @@ function ProfilePage() {
                   <span className="text-muted-foreground">
                     <span className="font-mono text-foreground">{data.following}</span> following
                   </span>
+                  <ShareStreakDialog
+                    username={data.profile.username}
+                    streak={data.profile.streak_count ?? 0}
+                    longest={(data.profile as any).longest_streak ?? 0}
+                  />
                 </div>
               </div>
               {!data.is_me && session ? (
@@ -158,6 +163,68 @@ function ProfilePage() {
         </>
       )}
     </AppShell>
+  );
+}
+
+function ShareStreakDialog({
+  username,
+  streak,
+  longest,
+}: {
+  username: string;
+  streak: number;
+  longest: number;
+}) {
+  const origin = "https://shippedin.dev";
+  const badge = `${origin}/api/public/badge/${username}`;
+  const profile = `${origin}/u/${username}`;
+  const md = `[![ShippedIn streak](${badge})](${profile})`;
+  const html = `<a href="${profile}"><img src="${badge}" alt="ShippedIn streak" /></a>`;
+  const text = `I'm on a ${streak}-day shipping streak on ShippedIn. Building in public, every day.`;
+  const copy = (v: string) => {
+    navigator.clipboard.writeText(v);
+    toast.success("Copied");
+  };
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="ghost" size="sm" className="h-7 px-2 text-xs">
+          Share streak
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Show off your streak</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div className="rounded-lg border border-border bg-secondary/40 p-4 text-center">
+            <p className="font-mono text-4xl font-semibold text-primary">{streak}</p>
+            <p className="text-sm text-muted-foreground">day streak · best {longest}</p>
+            <img src={`/api/public/badge/${username}`} alt="Streak badge" className="mx-auto mt-3" />
+          </div>
+          {[
+            ["GitHub README", md],
+            ["Website", html],
+          ].map(([label, v]) => (
+            <div key={label} className="space-y-1">
+              <Label>{label}</Label>
+              <div className="flex gap-2">
+                <Input readOnly value={v} className="font-mono text-xs" />
+                <Button size="sm" variant="secondary" onClick={() => copy(v)}>Copy</Button>
+              </div>
+            </div>
+          ))}
+        </div>
+        <DialogFooter className="gap-2">
+          <Button asChild variant="secondary">
+            <a target="_blank" rel="noreferrer" href={`https://x.com/intent/post?text=${encodeURIComponent(text)}&url=${encodeURIComponent(profile)}`}>Post on X</a>
+          </Button>
+          <Button asChild variant="secondary">
+            <a target="_blank" rel="noreferrer" href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(profile)}`}>Share on LinkedIn</a>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
