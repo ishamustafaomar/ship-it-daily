@@ -17,7 +17,7 @@ const httpUrl = z
 export default defineTool({
   name: "create_ship",
   title: "Create a ship",
-  description: "Post something to ShippedIn as the signed-in user. Use post_type 'ship' for what you shipped today, 'ask' to ask for help, 'feedback' to request feedback, or 'discussion' for general talk. Keeps the daily streak going.",
+  description: "Post something to ShippedIn as the signed-in user. Use post_type 'ship' for what you shipped today, 'ask' to ask for help, 'feedback' to request feedback, or 'discussion' for general talk. POSTING RULES: max 5 posts per day (enforced). Bundle related work into one bigger update instead of many small ones. Never post once per individual video, image or asset; only post when the format or product meaningfully changes, or as a roundup. Never post duplicates. Keeps the daily streak going.",
   inputSchema: {
     body: z.string().min(1).max(560).describe("The post body (max 560 chars)."),
     post_type: z.enum(["ship", "ask", "feedback", "discussion"]).default("ship"),
