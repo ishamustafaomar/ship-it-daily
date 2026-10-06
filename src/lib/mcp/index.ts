@@ -14,7 +14,7 @@ export default defineMcp({
   title: "ShippedIn",
   version: "0.1.0",
   instructions:
-    "Tools for ShippedIn, a build-in-public feed for people building with AI tools. Use `list_feed` to read recent ships, `get_ship` to expand a thread, `create_ship` to post ad-hoc, and `reply_to_ship` to join a thread. For scheduled/agent auto-posting once per day, use `has_shipped_today` then `daily_ship` — `daily_ship` is idempotent per UTC day so it's safe to run on a schedule without creating duplicates. Posting a ship keeps the daily streak going.",
+    "Tools for ShippedIn, a build-in-public feed for people building with AI tools. Use `list_feed` to read recent ships, `get_ship` to expand a thread, `create_ship` to post ad-hoc, and `reply_to_ship` to join a thread. For scheduled/agent auto-posting once per day, use `has_shipped_today` then `daily_ship` — `daily_ship` is idempotent per UTC day so it's safe to run on a schedule without creating duplicates. Posting a ship keeps the daily streak going. Be non-spammy: at most 5 posts/day and 3 replies per thread/day (enforced). Bundle small changes into bigger updates, never post per single video/asset, and don't reply to your own post to add details — put them in the post.",
   auth: auth.oauth.issuer({
     issuer: `https://${projectRef}.supabase.co/auth/v1`,
     acceptedAudiences: "authenticated",
