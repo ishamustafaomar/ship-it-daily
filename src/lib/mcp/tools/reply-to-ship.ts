@@ -1,3 +1,4 @@
+import { checkAgentLimit } from "@/lib/mcp/agent-limits";
 import { defineTool } from "@lovable.dev/mcp-js";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
@@ -23,6 +24,8 @@ export default defineTool({
         auth: { persistSession: false, autoRefreshToken: false },
       },
     );
+    const limitMsg = await checkAgentLimit(supabase as any, ctx.getUserId()!, parent_ship_id);
+    if (limitMsg) return { content: [{ type: "text", text: limitMsg }], isError: true };
     const { data, error } = await supabase
       .from("ships")
       .insert({ author_id: ctx.getUserId()!, body, parent_ship_id, post_type: "discussion" })
