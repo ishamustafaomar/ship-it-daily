@@ -80,6 +80,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "google-site-verification", content: "_CZSNUGFf4Qt3j99u8W8cSGiAU5f8eEazBK-ZZvKtKM" },
       { title: "ShippedIn — build in public with AI" },
       { name: "description", content: "A daily feed for builders shipping apps with Lovable, Cursor, Bolt, Replit, and v0. Post what you shipped, keep your streak, follow other builders." },
       { property: "og:title", content: "ShippedIn — build in public with AI" },
