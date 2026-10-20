@@ -1,6 +1,7 @@
 # Roadmap
 
 ## Open
+- [ ] Complete Google Search Console verification and submit the live sitemap (publish approval required for Google's verification tag)
 - [ ] Add a What's New page (public changelog) and link it from the app
 - [ ] Publish so the daily auto-post fix and streak badges go live (needs Omar to press Publish)
 - [ ] Real ship dates for the games and SiteScoper posts (waiting on Omar)
