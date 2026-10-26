@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -18,6 +18,8 @@ import { createShip } from "@/lib/api.functions";
 import { TOOL_TAGS } from "@/lib/format";
 import { UserAvatar } from "./UserAvatar";
 import { TagInput } from "./TagInput";
+import { useComposerDraft } from "@/hooks/use-composer-draft";
+import { hasDraft } from "@/lib/composer-draft";
 
 const NONE = "__none__";
 
@@ -52,14 +54,21 @@ export function Composer({
   const qc = useQueryClient();
   const create = useServerFn(createShip);
   const fileInput = useRef<HTMLInputElement>(null);
-  const [body, setBody] = useState("");
-  const [tool, setTool] = useState<string>(NONE);
-  const [link, setLink] = useState("");
-  const [imagePath, setImagePath] = useState<string | null>(null);
+  const { draft, update, clear, ready, saved } = useComposerDraft(myUserId, parentShipId);
+  const { body, tool, link, imagePath, postType, topicTags } = draft;
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
-  const [postType, setPostType] = useState<PostType>("ship");
-  const [topicTags, setTopicTags] = useState<string[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setImagePreview(null);
+    if (imagePath) {
+      void supabase.storage.from("ship-images").createSignedUrl(imagePath, 3600).then(({ data }) => {
+        if (!cancelled) setImagePreview(data?.signedUrl ?? null);
+      });
+    }
+    return () => { cancelled = true; };
+  }, [imagePath]);
 
   const m = useMutation({
     mutationFn: async () =>
@@ -75,13 +84,8 @@ export function Composer({
         },
       }),
     onSuccess: () => {
-      setBody("");
-      setTool(NONE);
-      setLink("");
-      setImagePath(null);
+      clear();
       setImagePreview(null);
-      setPostType("ship");
-      setTopicTags([]);
       qc.invalidateQueries();
       toast.success(parentShipId ? "Reply posted" : "Posted!");
       onDone?.();
@@ -106,7 +110,7 @@ export function Composer({
       const { data: signed } = await supabase.storage
         .from("ship-images")
         .createSignedUrl(path, 3600);
-      setImagePath(path);
+      update({ imagePath: path });
       setImagePreview(signed?.signedUrl ?? null);
     } catch (e: any) {
       toast.error(e?.message ?? "Upload failed");
@@ -116,8 +120,8 @@ export function Composer({
   }
 
   const len = body.length;
-  const canPost = body.trim().length > 0 && !m.isPending && !uploading;
-  const active = POST_TYPES.find((p) => p.value === postType)!;
+  const canPost = ready && body.trim().length > 0 && !m.isPending && !uploading;
+  const active = POST_TYPES.find((p) => p.value === postType) ?? POST_TYPES[0];
   const effectivePlaceholder =
     placeholder ?? (parentShipId ? "Write a reply..." : active.placeholder);
 
@@ -128,18 +132,21 @@ export function Composer({
         {!parentShipId ? (
           <div className="mb-3 flex flex-wrap gap-1.5">
             {POST_TYPES.map((t) => (
-              <button
+              <Button
                 key={t.value}
+                variant="ghost"
+                size="sm"
+                disabled={!ready || m.isPending}
                 type="button"
-                onClick={() => setPostType(t.value)}
-                className={`rounded-full px-3 py-1 font-mono text-xs transition-colors ${
+                onClick={() => update({ postType: t.value })}
+                className={`h-auto rounded-full px-3 py-1 font-mono text-xs transition-colors ${
                   postType === t.value
                     ? "bg-primary text-primary-foreground"
                     : "bg-secondary text-muted-foreground hover:text-foreground"
                 }`}
               >
                 {t.label}
-              </button>
+              </Button>
             ))}
           </div>
         ) : null}
@@ -148,7 +155,8 @@ export function Composer({
           autoFocus={autoFocus}
           data-composer="true"
           value={body}
-          onChange={(e) => setBody(e.target.value)}
+          disabled={!ready || m.isPending}
+          onChange={(e) => update({ body: e.target.value })}
           placeholder={effectivePlaceholder}
           rows={parentShipId ? 2 : 3}
           className="resize-none border-0 bg-transparent text-base focus-visible:ring-0 focus-visible:ring-offset-0 p-0 shadow-none"
@@ -159,7 +167,8 @@ export function Composer({
           <LinkIcon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
           <Input
             value={link}
-            onChange={(e) => setLink(e.target.value)}
+            disabled={!ready || m.isPending}
+            onChange={(e) => update({ link: e.target.value })}
             placeholder="https://your-link.com (optional)"
             className="h-8 font-mono text-xs"
           />
@@ -169,7 +178,7 @@ export function Composer({
           <div className="mt-2">
             <TagInput
               value={topicTags}
-              onChange={setTopicTags}
+              onChange={(topicTags) => update({ topicTags })}
               max={3}
               placeholder="topics (optional) — e.g. auth, stripe-payments"
             />
@@ -181,7 +190,7 @@ export function Composer({
             <img src={imagePreview} alt="" className="max-h-72 w-full object-cover" />
             <button
               onClick={() => {
-                setImagePath(null);
+                update({ imagePath: null });
                 setImagePreview(null);
               }}
               className="absolute right-2 top-2 rounded-full bg-background/80 p-1 text-foreground hover:bg-background"
@@ -193,8 +202,19 @@ export function Composer({
           </div>
         ) : null}
 
-        <div className="mt-3 flex items-center gap-2">
-          <Select value={tool} onValueChange={setTool}>
+        {hasDraft(draft) ? (
+          <div className="mt-2 flex items-center justify-between gap-2">
+            <span role="status" className="text-xs text-muted-foreground">
+              {saved ? "Draft saved" : "Draft not saved on this device"}
+            </span>
+            <Button type="button" variant="ghost" size="sm" className="h-7 gap-1 px-2 text-xs" disabled={m.isPending || uploading} onClick={() => { clear(); setImagePreview(null); }}>
+              <X className="h-3 w-3" /> Discard
+            </Button>
+          </div>
+        ) : null}
+
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <Select value={tool} onValueChange={(tool) => update({ tool })} disabled={!ready || m.isPending}>
             <SelectTrigger className="h-8 w-36 font-mono text-xs">
               <SelectValue placeholder="tool" />
             </SelectTrigger>
