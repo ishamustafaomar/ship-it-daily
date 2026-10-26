@@ -7,6 +7,7 @@
 - [ ] Research competitors/trends and pick the next low-risk improvement
 
 ## Done
+- SEO heading correction: descriptive main headings on the feed, ship detail, and builder profiles
 - Google Search Console verified; live sitemap submitted and fetched with zero errors or warnings
 - Streak badges + share card
 - Daily auto-post repaired, runs once a day

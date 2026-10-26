@@ -91,6 +91,7 @@ function HomePage() {
 
   return (
     <AppShell right={<RightRail />}>
+      <h1 className="sr-only">Daily updates from builders shipping with AI tools</h1>
       <div className="border-b border-border/70">
         <div className="flex">
           {(session ? ["following", "for_you", "relevant"] as const : ["for_you"] as const).map((t) => (

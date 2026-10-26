@@ -49,7 +49,11 @@ function ShipDetail() {
         >
           <ArrowLeft className="h-4 w-4" />
         </button>
-        <h1 className="text-base font-semibold">Ship</h1>
+        <h1 className="min-w-0 break-words text-base font-semibold">
+          {data?.ship
+            ? `Builder update: ${data.ship.body.trim().replace(/\s+/g, " ").slice(0, 100)}${data.ship.body.trim().replace(/\s+/g, " ").length > 100 ? "…" : ""}`
+            : isLoading || sessionLoading ? "Loading builder update" : "Builder update not found"}
+        </h1>
       </header>
       {isLoading ? (
         <div className="flex items-center justify-center p-10">

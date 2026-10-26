@@ -39,6 +39,7 @@ export const Route = createFileRoute("/u/$username")({
       { property: "og:title", content: `@${params.username} on ShippedIn` },
       { property: "og:description", content: `Follow @${params.username}'s daily ships and streak on ShippedIn.` },
       { property: "og:type", content: "profile" },
+      { name: "twitter:card", content: "summary" },
       { property: "og:url", content: `https://shippedin.dev/u/${params.username}` },
     ],
     links: [{ rel: "canonical", href: `https://shippedin.dev/u/${params.username}` }],
@@ -96,7 +97,10 @@ function ProfilePage() {
             <div className="flex items-start gap-4">
               <UserAvatar url={data.profile.avatar_url} name={data.profile.display_name} size={72} />
               <div className="min-w-0 flex-1">
-                <h1 className="text-xl font-semibold">{data.profile.display_name ?? data.profile.username}</h1>
+                <h1 className="break-words text-xl font-semibold">
+                  {data.profile.display_name?.trim() || data.profile.username || username}
+                  <span className="sr-only">’s builder profile</span>
+                </h1>
                 <p className="font-mono text-sm text-muted-foreground">@{data.profile.username}</p>
                 {data.profile.building_now ? (
                   <p className="mt-2 rounded-md border border-border/60 bg-secondary/40 px-2 py-1 font-mono text-xs text-muted-foreground">
