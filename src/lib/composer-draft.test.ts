@@ -1,4 +1,5 @@
-import { describe, expect, test } from "bun:test";
+import { describe, test } from "node:test";
+import { strict as assert } from "node:assert";
 import { draftKey, emptyDraft, parseDraft, persistDraft } from "./composer-draft";
 
 function memoryStorage() {
@@ -12,25 +13,25 @@ describe("composer drafts", () => {
     const key = draftKey("builder", null);
     const draft = { ...emptyDraft(), body: "An update\nwith  exact spacing!", postType: "feedback" as const, link: "https://shippedin.dev", topicTags: ["api-costs"], tool: "Lovable", imagePath: "builder/image.png" };
     persistDraft(storage, key, draft);
-    expect(parseDraft(storage.getItem(key))).toEqual(draft);
-    expect(parseDraft(storage.getItem(key)).body.length).toBe(30);
+    assert.deepEqual(parseDraft(storage.getItem(key)), draft);
+    assert.equal(parseDraft(storage.getItem(key)).body.length, 30);
   });
   test("isolates replies by thread and drafts by account", () => {
     const storage = memoryStorage();
     persistDraft(storage, draftKey("a", "thread-1"), { ...emptyDraft(), body: "Congrats!" });
-    expect(parseDraft(storage.getItem(draftKey("a", "thread-1"))).body).toBe("Congrats!");
-    expect(parseDraft(storage.getItem(draftKey("a", "thread-2"))).body).toBe("");
-    expect(parseDraft(storage.getItem(draftKey("b", "thread-1"))).body).toBe("");
-    expect(parseDraft(storage.getItem(draftKey("a", null))).body).toBe("");
+    assert.equal(parseDraft(storage.getItem(draftKey("a", "thread-1"))).body, "Congrats!");
+    assert.equal(parseDraft(storage.getItem(draftKey("a", "thread-2"))).body, "");
+    assert.equal(parseDraft(storage.getItem(draftKey("b", "thread-1"))).body, "");
+    assert.equal(parseDraft(storage.getItem(draftKey("a", null))).body, "");
   });
   test("clears saved data when discarded or posted successfully", () => {
     const storage = memoryStorage();
     const key = draftKey("a", null);
     persistDraft(storage, key, { ...emptyDraft(), body: "Ready to ship" });
     persistDraft(storage, key, emptyDraft());
-    expect(storage.getItem(key)).toBeNull();
+    assert.equal(storage.getItem(key), null);
   });
   test("handles corrupt saved data without losing the composer", () => {
-    expect(parseDraft("{bad json")).toEqual(emptyDraft());
+    assert.deepEqual(parseDraft("{bad json"), emptyDraft());
   });
 });
