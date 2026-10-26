@@ -12,6 +12,9 @@ export function LegalFooter({ className = "" }: { className?: string }) {
       <Link to="/terms" className="hover:text-foreground">
         Terms
       </Link>
+      <Link to="/whats-new" className="hover:text-foreground">
+        What's New
+      </Link>
     </div>
   );
 }

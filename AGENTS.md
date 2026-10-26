@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Composer drafts use account- and thread-scoped browser storage through a shared hook; write synchronously from changes so navigation cannot race a delayed save, and clear only after success or explicit discard.
