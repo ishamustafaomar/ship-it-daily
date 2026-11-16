@@ -54,7 +54,19 @@ export function Composer({
   const qc = useQueryClient();
   const create = useServerFn(createShip);
   const fileInput = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { draft, update, clear, ready, saved } = useComposerDraft(myUserId, parentShipId);
+  useEffect(() => {
+    if (!autoFocus || !ready) return;
+    const el = textareaRef.current;
+    if (!el) return;
+    const id = requestAnimationFrame(() => {
+      el.focus();
+      const end = el.value.length;
+      el.setSelectionRange(end, end);
+    });
+    return () => cancelAnimationFrame(id);
+  }, [autoFocus, ready]);
   const { body, tool, link, imagePath, postType, topicTags } = draft;
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -152,6 +164,7 @@ export function Composer({
         ) : null}
 
         <Textarea
+          ref={textareaRef}
           autoFocus={autoFocus}
           data-composer="true"
           value={body}
